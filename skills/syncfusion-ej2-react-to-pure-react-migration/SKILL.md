@@ -1,5 +1,5 @@
 ---
-name: syncfusion-ej2-react-to-pure-react-migration-skill
+name: syncfusion-ej2-react-to-pure-react-migration
 description: Migrate Syncfusion EJ2 React components to Syncfusion Pure React components. Use when a user has EJ2 React reference files (e.g. `@syncfusion/ej2-react-buttons`, `ButtonComponent`, `cssClass`, unprefixed event props, `<Inject services=[...]/>`, `<XxxDirective>` patterns, class-component lifecycle methods, or `enableRtl`/`enableMask`/`e-flat`/`e-success` style props) and wants to convert them to the new `@syncfusion/react-*` packages. Apply this skill whenever user code references these patterns, even if the destination component lives in a different package or keeps the same display name.
 metadata:
   author: "Syncfusion Inc"
