@@ -113,7 +113,7 @@ Use `ChartTitle` and `ChartSubtitle` as direct children of `Chart`. Keep the vis
     fontWeight="Bold"
     color="#242424"
     align="Center"
-    overflow="Wrap"
+    textOverflow="Wrap"
   />
 
   <ChartSubtitle
@@ -121,7 +121,7 @@ Use `ChartTitle` and `ChartSubtitle` as direct children of `Chart`. Keep the vis
     fontSize="12px"
     color="#616161"
     align="Center"
-    overflow="Wrap"
+    textOverflow="Wrap"
   />
 </Chart>
 ```
@@ -187,14 +187,12 @@ Use `ChartAxisLabel.format`, `formatter`, `skeleton`, or `rotationAngle` rather 
 ```tsx
 <ChartPrimaryYAxis valueType="Double">
   <ChartMajorGridLines
-    visible={true}
     width={1}
     color="#E5E5E5"
     dashArray="4,2"
   />
 
   <ChartMinorGridLines
-    visible={true}
     width={0.5}
     color="#F2F2F2"
     dashArray=""

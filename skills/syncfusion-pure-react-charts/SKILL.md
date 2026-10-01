@@ -1,6 +1,6 @@
 ---
 name: syncfusion-pure-react-charts
-description: Build interactive React Charts with Syncfusion components. Covers all chart types (line, bar, column, area, pie, scatter, bubble, radar, polar, financial charts, and specialized types). Use for data visualization, interactivity (tooltips, zoom, pan, selection), data binding (local/remote), accessibility (WCAG), styling, performance optimization, and real-time dashboards. Complete reference with 20+ chart types, patterns, troubleshooting, and production best practices.
+description: Build interactive React charts with the Syncfusion Pure React package @syncfusion/react-charts (Chart, PieChart). Covers all 50 Cartesian series types (line, spline, area, column, bar, stacking, range, step, scatter, bubble, polar, radar, candle, hilo, waterfall, histogram, pareto, box-and-whisker, multi-colored) plus pie and donut. Use whenever the user mentions Syncfusion charts, @syncfusion/react-charts, or wants React data visualization with tooltips, zoom/pan, selection, crosshair, legends, axes and panes, multi-level labels, strip lines, annotations, trendlines, technical indicators, gradients, range color mapping, local/remote data binding, live dashboards, accessibility, theming, or image/PDF/Excel/CSV export and print.
 metadata:
   author: "Syncfusion Inc"
   version: "34.1.29"
@@ -22,7 +22,9 @@ This skill is intentionally aligned to the chart topics documented in the charts
 - Local and remote data binding
 - Chart elements: annotations, data labels, markers, series labels, last value labels, error bars, striplines, trendlines, legends, indicators
 - Line, spline, step line, area, range area, spline area, step area, column, bar, range column, stacking, combination charts
-- Bubble, scatter, histogram, pareto, waterfall, pie, donut, polar, radar, and financial chart families
+- Bubble, scatter, histogram, pareto, waterfall, box-and-whisker, multi-colored line/area, pie, donut, polar, radar, and financial chart families
+- Gradient fills, range color mapping, multi-level axis labels, donut center labels, pie selection/highlight/annotations
+- Image (SVG/PNG/JPG), PDF, and data (XLSX/CSV) export through `exportChart`, and printing
 - Real-time dashboard patterns and live updates
 
 When a request maps to one of those areas, prefer the corresponding reference guidance and the package-provided component hierarchy over custom drawing logic.
@@ -77,15 +79,18 @@ Full setup walkthrough, theme options, and the canonical first-chart pattern: [g
 | Setup, basic chart | [getting-started.md](./references/getting-started.md) |
 | Component overview, surface vs. series hierarchy | [overview.md](./references/overview.md) |
 | Choosing a chart `type` and required fields | [chart-types.md](./references/chart-types.md) |
-| Pie or donut | [pie-and-donut.md](./references/pie-and-donut.md) |
+| Pie or donut, center label, pie selection/annotations | [pie-and-donut.md](./references/pie-and-donut.md) |
 | Axes, panes, labels, multiple scales | [axis-configuration.md](./references/axis-configuration.md) |
 | Data binding (local, React state, remote API, `DataManager`) | [data-binding.md](./references/data-binding.md) |
 | Annotations, labels, markers, legends, trendlines, striplines | [chart-elements.md](./references/chart-elements.md) |
+| Gradient fills on series, trendlines, indicators | [chart-elements/gradients.md](./references/chart-elements/gradients.md) |
+| Coloring points by value band, range/gradient legend | [chart-elements/range-color-mapping.md](./references/chart-elements/range-color-mapping.md) |
+| Grouped (multi-level) axis labels | [axis-configuration/multi-level-labels.md](./references/axis-configuration/multi-level-labels.md) |
 | Tooltips, zoom, pan, crosshair, selection, highlight | [interactivity.md](./references/interactivity.md) |
 | Event callback props and signatures | [events.md](./references/events.md) |
 | Responsive sizing, container layout, density | [layout-and-styling.md](./references/layout-and-styling.md) |
 | Themes, palettes, visual customization | [styling-and-appearance.md](./references/styling-and-appearance.md) |
-| Print and export | [print-and-export.md](./references/print-and-export.md) |
+| Print, image/PDF export, Excel/CSV data export | [print-and-export.md](./references/print-and-export.md) |
 | Localization, locale-aware formatting | [globalization.md](./references/globalization.md) |
 | Right-to-left rendering | [rtl.md](./references/rtl.md) |
 | WCAG/ARIA, screen readers, color contrast, RTL | [accessibility.md](./references/accessibility.md) |
@@ -122,11 +127,15 @@ These rules are enforced across every reference. Conform to them when generating
 - Use the exact component names exported by `@syncfusion/react-charts`; do not invent aliases or rely on legacy names.
 - Place chart-level elements such as `ChartTitle`, `ChartSubtitle`, `ChartArea`, `ChartLegend`, `ChartTooltip`, `ChartZoomSettings`, `ChartSelection`, and `ChartHighlight` directly under `Chart`.
 - Configure axes with the verified child configuration components: place `ChartAxisTitle`, `ChartAxisLabel`, `ChartMajorGridLines`, `ChartMinorGridLines`, and `ChartMinorTickLines` inside `ChartPrimaryXAxis` / `ChartPrimaryYAxis`.
+- Wrap panes as `ChartRows > ChartRow` and `ChartColumns > ChartColumn`; a bare `ChartRow` or `ChartColumn` under `Chart` is ignored.
 - Define extra axes with `ChartAxes`, give each axis a unique `name`, and map each series through `xAxisName` / `yAxisName`. Do not use a guessed `ChartSecondaryYAxis` tag.
-- Configure strip lines through `ChartStripLines` and `ChartStripLine` nested inside the axis; use the verified `{ start, end }` range object pattern.
-- Nest point adornments in the series hierarchy: `ChartMarker` contains `ChartDataLabel`, and `ChartTrendlineCollection` contains `ChartTrendline`.
+- Configure strip lines through `ChartStripLines` and `ChartStripLine` nested inside the axis; set `range={{ start, end }}`, `style={{ color }}`, and `text={{ content }}` objects (not flat `start`/`color`/`text` props).
+- Use `ChartAxisLabel intersectAction` for overlapping axis labels; `intersectMode` belongs only to `ChartDataLabel`.
+- Nest point adornments in the series hierarchy: `ChartMarker` contains `ChartDataLabel`, and `ChartTrendlineCollection` contains `ChartTrendline`. Pareto line options go in a `ChartParetoOptions` child; gradients go in a `ChartLinearGradient` / `ChartRadialGradient` child of the series, trendline, or indicator.
+- Map bubble size with `sizeField` (not `size`); enable last-value labels with `ChartLastValueLabel enable`.
 - Configure legend and tooltip with the verified prop names, examples: `ChartTooltip headerText`, `ChartLegend align`, `ChartTooltip textStyle.fontSize`.
-- Use the verified event prop names such as `onClick`, `onMouseMove`, `onPointClick`, and `onLegendClick`, and type handlers with the exported event types when available.
+- Use the verified event prop names such as `onClick`, `onMouseMove`, `onPointClick`, `onLegendClick`, `onAxisLabelClick`, `onMultiLevelLabelClick`, `onZoomStart`, `onZoomEnd`, and `onResize` on the root `Chart`, and type handlers with the exported event types (`LegendClickEvent`, `PointClickEvent`, and so on).
+- Export with `exportChart(chart, type, fileName)` where `type` is `SVG`, `PNG`, `JPG`, `PDF`, `XLSX`, or `CSV`; `exportImage` and `exportPDF` are deprecated.
 - For pie and donut, use the `PieChart` family. Create a donut with `PieChartSeries.innerRadius`; there is no `isCircular` prop and no `Pie` series type on `ChartSeries`.
 - Before finalizing any generated sample, verify every imported symbol is used, every component is exported by `@syncfusion/react-charts`, and the resulting tree matches the verified parent/child hierarchy.
 
@@ -183,6 +192,7 @@ These rules are enforced across every reference. Conform to them when generating
 | Pie or donut specifically | `pie-and-donut.md` |
 | Localization / RTL | `globalization.md` + `rtl.md` |
 | Print or export | `print-and-export.md` |
-|Register a license key | `registering-license-keys.md` |
+| Register a license key | `registering-license-keys.md` |
+| Gradients, range colors, grouped axis labels | `chart-elements/gradients.md`, `chart-elements/range-color-mapping.md`, `axis-configuration/multi-level-labels.md` |
 
 ---

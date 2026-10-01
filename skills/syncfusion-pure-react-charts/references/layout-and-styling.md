@@ -175,7 +175,7 @@ Use a concise `ChartTitle` for the visualization and normal page headings for th
       fontSize="18px"
       fontWeight="Bold"
       color="#242424"
-      overflow="Wrap"
+      textOverflow="Wrap"
     />
   </Chart>
 </section>

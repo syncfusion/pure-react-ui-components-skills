@@ -549,6 +549,14 @@ export default function TechnicalIndicatorsChart() {
 
 Small sample periods above only demonstrate configuration. For analytical use, provide sufficient historical data for the selected period and indicator calculation.
 
+## Overbought and oversold zones
+
+`showZones` on `ChartIndicator` (default `true`) draws the overbought and oversold regions for indicators that define them, such as `Rsi` and `Stochastic`. The thresholds come from `overBought` and `overSold`. Set `showZones={false}` to show only the indicator line.
+
+```tsx
+<ChartIndicator type="Rsi" seriesName="Price" period={14} overBought={70} overSold={30} showZones={false} />
+```
+
 ## Common errors
 
 ### Nesting indicators inside a series

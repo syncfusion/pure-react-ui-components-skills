@@ -366,7 +366,7 @@ type BubblePoint = {
   dataSource={data}
   xField="x"
   yField="y"
-  size="size"
+  sizeField="size"
   type="Bubble"
 />
 ```

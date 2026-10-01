@@ -316,7 +316,7 @@ const bubbleData = [
   dataSource={bubbleData}
   xField="x"
   yField="y"
-  size="size"
+  sizeField="size"
   type="Bubble"
 />
 ```
@@ -408,14 +408,22 @@ Use the native `Pareto` series. Do not rebuild it as an invented column-plus-lin
   xField="category"
   yField="value"
   type="Pareto"
-  paretoOptions={{
-    showAxis: true,
-    fill: "#E67E22",
-    width: 2,
-    dashArray: "0",
-  }}
-/>
+>
+  <ChartParetoOptions
+    showAxis={true}
+    fill="#E67E22"
+    width={2}
+    dashArray="0"
+  >
+    {/* Optional: marker and data labels for the cumulative line */}
+    <ChartMarker visible={true} width={6} height={6}>
+      <ChartDataLabel visible={true} format="{value}%" />
+    </ChartMarker>
+  </ChartParetoOptions>
+</ChartSeries>
 ```
+
+Configure the cumulative line with a `ChartParetoOptions` child of the Pareto `ChartSeries`; `paretoOptions` is not a `ChartSeries` prop. A `ChartMarker` (with a nested `ChartDataLabel`) placed inside `ChartParetoOptions` styles the cumulative line points, while a `ChartMarker` placed directly in the series styles the columns.
 
 Documented Pareto options include `showAxis` with default `true`, `fill`, `width` with default `1`, and `dashArray` with default `"0"`.
 
@@ -571,3 +579,23 @@ Before returning any chart sample:
 8. Confirm every imported symbol is used and every used symbol is imported.
 9. Confirm all JSX is real, balanced TSX.
 10. Remove arbitrary performance thresholds and unverified claims.
+
+## Transposed layout and series order
+
+Set `transposed={true}` on `Chart` to swap the X and Y axes, so a column-style layout renders horizontally (and a line chart runs top to bottom). Use it when an existing vertical configuration must be flipped without changing every series `type`. For simple horizontal bars, prefer `type="Bar"`.
+
+```tsx
+<Chart transposed={true}>
+  <ChartPrimaryXAxis valueType="Category" />
+  <ChartSeriesCollection>
+    <ChartSeries dataSource={data} xField="country" yField="medals" type="Column" />
+  </ChartSeriesCollection>
+</Chart>
+```
+
+Use `zOrder` on `ChartSeries` (default `0`) to control drawing order: series with a higher `zOrder` are drawn above lower ones. This keeps a line visible on top of overlapping columns or areas regardless of declaration order.
+
+```tsx
+<ChartSeries type="Column" zOrder={0} dataSource={data} xField="month" yField="sales" />
+<ChartSeries type="Line" zOrder={1} dataSource={data} xField="month" yField="target" />
+```

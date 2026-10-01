@@ -289,7 +289,7 @@ const handleZoomStart = (
 
 <Chart onZoomStart={handleZoomStart}>
   <ChartZoomSettings
-    enableSelectionZooming={true}
+    selectionZoom={true}
   />
 </Chart>
 ```
@@ -311,7 +311,7 @@ const handleZoomEnd = (
 
 <Chart onZoomEnd={handleZoomEnd}>
   <ChartZoomSettings
-    enableSelectionZooming={true}
+    selectionZoom={true}
   />
 </Chart>
 ```

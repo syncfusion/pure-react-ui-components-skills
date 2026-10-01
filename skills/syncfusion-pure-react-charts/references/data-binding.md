@@ -890,6 +890,10 @@ If no points render, verify:
 
 A generic debounce helper must not call React hooks internally outside a component or custom hook. Prefer a properly scoped custom hook, a ref-based buffer, or batching logic with explicit cleanup.
 
+## Complex property mapping
+
+`enableComplexProperty` on `ChartSeries` (default `false`) enables the complex-property mapping path, which the API describes as improving performance when binding large data sets. Leave it off for ordinary flat data; enable it and measure when binding large data sources.
+
 ## Common errors
 
 ### Missing field mappings

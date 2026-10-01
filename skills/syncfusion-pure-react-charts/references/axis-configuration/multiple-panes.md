@@ -9,7 +9,7 @@ A chart can be divided in two directions:
 - Rows divide the chart area vertically into stacked panes.
 - Columns divide the chart area horizontally into side-by-side panes.
 
-Use `ChartRow` to define a row and `ChartColumn` to define a column. Assign axes to panes with `rowIndex` or `columnIndex`.
+Use `ChartRow` to define a row and `ChartColumn` to define a column. Every `ChartRow` must sit inside a `ChartRows` wrapper and every `ChartColumn` inside a `ChartColumns` wrapper, both placed directly under `Chart`; rows or columns placed directly under `Chart` are ignored. Assign axes to panes with `rowIndex` or `columnIndex`.
 
 - Assign a vertical axis to a row with `rowIndex`.
 - Assign a horizontal axis to a column with `columnIndex`.
@@ -29,14 +29,16 @@ The official row API documents:
 `height` accepts percentage or pixel values.
 
 ```tsx
-<ChartRow
-  height="70%"
-  border={{ color: "#D9D9D9", width: 1, dashArray: "" }}
-/>
-<ChartRow
-  height="30%"
-  border={{ color: "#D9D9D9", width: 1, dashArray: "" }}
-/>
+<ChartRows>
+  <ChartRow
+    height="70%"
+    border={{ color: "#D9D9D9", width: 1, dashArray: "" }}
+  />
+  <ChartRow
+    height="30%"
+    border={{ color: "#D9D9D9", width: 1, dashArray: "" }}
+  />
+</ChartRows>
 ```
 
 Ensure the row heights form a sensible complete layout. Avoid ambiguous mixtures of percentages and pixels unless the container height is fixed and the remaining space is intentional.
@@ -46,8 +48,10 @@ Ensure the row heights form a sensible complete layout. Avoid ambiguous mixtures
 Use `width` to allocate each `ChartColumn`. The width can be a percentage or pixel string.
 
 ```tsx
-<ChartColumn width="60%" />
-<ChartColumn width="40%" />
+<ChartColumns>
+  <ChartColumn width="60%" />
+  <ChartColumn width="40%" />
+</ChartColumns>
 ```
 
 Ensure column widths form a sensible complete layout. A fixed pixel width is appropriate only when the chart container provides enough predictable space.
@@ -66,13 +70,16 @@ import {
   ChartPrimaryXAxis,
   ChartPrimaryYAxis,
   ChartRow,
+  ChartRows,
   ChartSeries,
   ChartSeriesCollection,
 } from "@syncfusion/react-charts";
 
 <Chart>
-  <ChartRow height="70%" />
-  <ChartRow height="30%" />
+  <ChartRows>
+    <ChartRow height="70%" />
+    <ChartRow height="30%" />
+  </ChartRows>
 
   <ChartPrimaryXAxis valueType="DateTime" />
 
@@ -122,6 +129,7 @@ import {
   ChartAxisLabel,
   ChartAxisTitle,
   ChartColumn,
+  ChartColumns,
   ChartPrimaryXAxis,
   ChartPrimaryYAxis,
   ChartSeries,
@@ -129,8 +137,10 @@ import {
 } from "@syncfusion/react-charts";
 
 <Chart>
-  <ChartColumn width="50%" />
-  <ChartColumn width="50%" />
+  <ChartColumns>
+    <ChartColumn width="50%" />
+    <ChartColumn width="50%" />
+  </ChartColumns>
 
   <ChartPrimaryXAxis
     valueType="Category"
@@ -206,8 +216,10 @@ const data = [
 ];
 
 <Chart>
-  <ChartRow height="50%" />
-  <ChartRow height="50%" />
+  <ChartRows>
+    <ChartRow height="50%" />
+    <ChartRow height="50%" />
+  </ChartRows>
 
   <ChartPrimaryXAxis
     valueType="DateTime"
@@ -266,11 +278,15 @@ A chart may define both rows and columns. Every axis assignment must still be ex
 
 ```tsx
 <Chart>
-  <ChartRow height="60%" />
-  <ChartRow height="40%" />
+  <ChartRows>
+    <ChartRow height="60%" />
+    <ChartRow height="40%" />
+  </ChartRows>
 
-  <ChartColumn width="65%" />
-  <ChartColumn width="35%" />
+  <ChartColumns>
+    <ChartColumn width="65%" />
+    <ChartColumn width="35%" />
+  </ChartColumns>
 
   <ChartAxes>
     <ChartAxis
@@ -292,19 +308,21 @@ Do not create a complex grid unless each pane has a clear analytical purpose. Mu
 Use the row `border` configuration when a visible separator is required.
 
 ```tsx
-<ChartRow
-  height="65%"
-  border={{
-    color: "#D9D9D9",
-    width: 1,
-    dashArray: "",
-  }}
-/>
+<ChartRows>
+  <ChartRow
+    height="65%"
+    border={{
+      color: "#D9D9D9",
+      width: 1,
+      dashArray: "",
+    }}
+  />
+</ChartRows>
 ```
 
 Keep separators subtle enough that the data remains visually dominant.
 
-For columns, use only the border or separator properties documented by the current `ChartColumn` API. Do not copy `ChartRow` properties to `ChartColumn` unless the column API confirms them.
+`ChartColumn` supports the same `border` object as `ChartRow`, plus `width` (default `"100%"`). Rows use `height`; columns use `width`.
 
 ## Complete two-pane financial example
 
@@ -318,6 +336,7 @@ import {
   ChartPrimaryXAxis,
   ChartPrimaryYAxis,
   ChartRow,
+  ChartRows,
   ChartSeries,
   ChartSeriesCollection,
 } from "@syncfusion/react-charts";
@@ -333,14 +352,16 @@ const data = [
 export default function MultiplePanesChart() {
   return (
     <Chart>
-      <ChartRow
-        height="70%"
-        border={{ color: "#D9D9D9", width: 1, dashArray: "" }}
-      />
-      <ChartRow
-        height="30%"
-        border={{ color: "#D9D9D9", width: 1, dashArray: "" }}
-      />
+      <ChartRows>
+        <ChartRow
+          height="70%"
+          border={{ color: "#D9D9D9", width: 1, dashArray: "" }}
+        />
+        <ChartRow
+          height="30%"
+          border={{ color: "#D9D9D9", width: 1, dashArray: "" }}
+        />
+      </ChartRows>
 
       <ChartPrimaryXAxis
         valueType="DateTime"
@@ -413,18 +434,22 @@ Correct:
 Incorrect:
 
 ```tsx
-<ChartRow height="100%" />
+<ChartRows>
+  <ChartRow height="100%" />
+</ChartRows>
 <ChartAxis name="secondaryAxis" rowIndex={1} />
 ```
 
-Only row index `0` exists in this example. Add another `ChartRow` or use `rowIndex={0}`.
+Only row index `0` exists in this example. Add another `ChartRow` inside `ChartRows` or use `rowIndex={0}`.
 
 ### Referring to a column that does not exist
 
 Incorrect:
 
 ```tsx
-<ChartColumn width="100%" />
+<ChartColumns>
+  <ChartColumn width="100%" />
+</ChartColumns>
 <ChartAxis name="secondaryXAxis" columnIndex={1} />
 ```
 
@@ -459,8 +484,8 @@ Defining an additional pane axis does not automatically move a series into that 
 Before returning a multiple-pane implementation:
 
 1. Import the required pane, axis, and series components from `@syncfusion/react-charts`.
-2. Define one `ChartRow` for every row index used by a vertical axis.
-3. Define one `ChartColumn` for every column index used by a horizontal axis.
+2. Define one `ChartRow` (inside `ChartRows`) for every row index used by a vertical axis.
+3. Define one `ChartColumn` (inside `ChartColumns`) for every column index used by a horizontal axis.
 4. Use valid percentage or pixel strings for row heights and column widths.
 5. Use zero-based `rowIndex` and `columnIndex` values.
 6. Assign vertical axes with `rowIndex`.

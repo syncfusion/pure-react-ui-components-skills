@@ -14,15 +14,18 @@ Use this umbrella reference to route chart-element requests to the correct detai
 8. [Last value labels](./chart-elements/last-value-labels.md)
 9. [Error bars](./chart-elements/error-bars.md)
 10. [Indicators](./chart-elements/indicators-technical-analysis.md)
+11. [Gradient fills](./chart-elements/gradients.md)
+12. [Range color mapping](./chart-elements/range-color-mapping.md)
 
 ## Ownership summary
 
 Use the correct owner for each element:
 
-- Chart-level: annotation collection and legend
+- Chart-level: annotation collection, legend, indicator collection, and range color collection
 - Series-level: markers, trendline collection, series labels, last-value labels, error bars, and indicators
 - Marker-level: data labels for marker-based Cartesian series
-- Axis-level: striplines
+- Axis-level: striplines and multi-level labels
+- Host-level (series, trendline, or indicator): linear and radial gradients
 
 Do not move a child component to the root simply because it affects the complete chart.
 
@@ -206,7 +209,7 @@ Use a last-value label to emphasize the latest value of a supported line or area
 
 ```tsx
 <ChartSeries type="Line">
-  <ChartLastValueLabel visible={true} />
+  <ChartLastValueLabel enable={true} />
 </ChartSeries>
 ```
 
@@ -249,6 +252,34 @@ Use technical indicators only with a compatible financial or numeric source seri
 ```
 
 Read [Indicators](./chart-elements/indicators-technical-analysis.md) for exact indicator types, periods, fields, required financial mappings, and axis placement.
+
+## Gradient fills
+
+Place one `ChartLinearGradient` or `ChartRadialGradient`, with `ChartGradientColorStop` children, inside the series, trendline, or indicator it paints.
+
+```tsx
+<ChartSeries dataSource={data} xField="month" yField="sales" type="Area" name="Sales">
+  <ChartLinearGradient x1={0} y1={0} x2={0} y2={1}>
+    <ChartGradientColorStop offset={0} color="#3B82F6" opacity={0.8} />
+    <ChartGradientColorStop offset={100} color="#3B82F6" opacity={0.05} />
+  </ChartLinearGradient>
+</ChartSeries>
+```
+
+Read [Gradient fills](./chart-elements/gradients.md) for coordinates, stop offsets, `lighten`/`brighten`, and supported hosts.
+
+## Range color mapping
+
+Place `ChartRangeColorCollection` with `ChartRangeColor` bands directly under `Chart` to color points by value, and set `ChartLegend mode="Range"` or `"Gradient"`.
+
+```tsx
+<ChartRangeColorCollection>
+  <ChartRangeColor start={0} end={50} fill="#DC2626" label="Below target" />
+  <ChartRangeColor start={51} end={100} fill="#16A34A" label="On target" />
+</ChartRangeColorCollection>
+```
+
+Read [Range color mapping](./chart-elements/range-color-mapping.md) for supported series types and legend behavior.
 
 ## Combining elements
 
@@ -325,6 +356,9 @@ Use the detailed page that matches the request:
 - Latest-value emphasis: `last-value-labels.md`
 - Uncertainty and error ranges: `error-bars.md`
 - Financial technical analysis: `indicators-technical-analysis.md`
+- Gradient or shaded fills on series, trendlines, or indicators: `gradients.md`
+- Coloring points by value band, range or gradient legends: `range-color-mapping.md`
+- Grouped axis labels (quarters, categories): `../axis-configuration/multi-level-labels.md`
 
 ## Validation checklist
 

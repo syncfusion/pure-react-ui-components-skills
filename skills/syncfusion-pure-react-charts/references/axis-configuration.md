@@ -13,6 +13,7 @@ Use this umbrella reference to route axis-related requests to the correct detail
 - [Logarithmic axis](./axis-configuration/log-axis.md)
 - [Multiple axes](./axis-configuration/multiple-axes.md)
 - [Multiple panes](./axis-configuration/multiple-panes.md)
+- [Multi-level labels](./axis-configuration/multi-level-labels.md)
 
 ## Base axis hierarchy
 
@@ -110,6 +111,8 @@ Use child components instead of guessed nested objects or EJ2 axis properties.
 
 Do not use an EJ2-style `title={{ text: "Revenue" }}` or `labelStyle={{ ... }}` when the Pure React architecture provides `ChartAxisTitle` and `ChartAxisLabel` children.
 
+The complete set of children an axis (`ChartPrimaryXAxis`, `ChartPrimaryYAxis`, or `ChartAxis`) reads is: `ChartAxisTitle`, `ChartAxisLabel`, `ChartMajorGridLines`, `ChartMinorGridLines`, `ChartMajorTickLines`, `ChartMinorTickLines`, `ChartCrosshairTooltip`, `ChartStripLines` (containing `ChartStripLine`), `ChartMultiLevelLabels` (containing `ChartMultiLevelLabel`), and `ChartScrollbar`. Other children are ignored.
+
 ## Additional axes
 
 Define additional axes with `ChartAxes` and `ChartAxis`. Give each axis a unique `name`, then map the series through the matching `xAxisName` or `yAxisName`.
@@ -139,7 +142,7 @@ Do not invent `ChartSecondaryXAxis` or `ChartSecondaryYAxis` components.
 
 ## Multiple panes
 
-Use chart rows and columns with axis `rowIndex`, `columnIndex`, and `span` when related series need separate plot regions. Keep each axis-to-pane and series-to-axis mapping explicit.
+Wrap `ChartRow` elements in `ChartRows` and `ChartColumn` elements in `ChartColumns`, then use axis `rowIndex`, `columnIndex`, and `span` when related series need separate plot regions. Keep each axis-to-pane and series-to-axis mapping explicit.
 
 Read [Multiple panes](./axis-configuration/multiple-panes.md) before generating pane configuration.
 
@@ -156,6 +159,7 @@ Use the detailed reference that matches the request:
 - Orders of magnitude and log base: `log-axis.md`
 - Different units or scales: `multiple-axes.md`
 - Separate plot regions: `multiple-panes.md`
+- Grouped labels such as quarters or product families: `multi-level-labels.md`
 
 ## Validation checklist
 

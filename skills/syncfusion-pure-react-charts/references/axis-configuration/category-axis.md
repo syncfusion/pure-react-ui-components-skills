@@ -196,7 +196,7 @@ Keep collision handling inside `ChartAxisLabel`.
   maxLabelDensity={2}
 >
   <ChartAxisLabel
-    intersectMode="Rotate45"
+    intersectAction="Rotate45"
     edgeLabelPlacement="Shift"
     enableTrim={true}
     maxLabelWidth={90}
@@ -206,7 +206,7 @@ Keep collision handling inside `ChartAxisLabel`.
 
 Relevant label options include:
 
-- `intersectMode`: `None`, `Hide`, `Trim`, `Wrap`, `MultipleRows`, `Rotate45`, or `Rotate90`
+- `intersectAction`: `None`, `Hide`, `Trim`, `Wrap`, `MultipleRows`, `Rotate45`, or `Rotate90`
 - `rotationAngle`: manual rotation angle
 - `edgeLabelPlacement`: `None`, `Hide`, or `Shift`
 - `enableTrim` and `maxLabelWidth`
@@ -248,7 +248,7 @@ export default function CategoryAxisChart() {
         <ChartAxisLabel
           placement="BetweenTicks"
           position="Outside"
-          intersectMode="Rotate45"
+          intersectAction="Rotate45"
           edgeLabelPlacement="Shift"
           enableTrim={true}
           maxLabelWidth={100}

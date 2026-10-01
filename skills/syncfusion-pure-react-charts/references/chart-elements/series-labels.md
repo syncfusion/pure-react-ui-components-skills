@@ -88,9 +88,9 @@ Use the series-label content API to replace the default series name when a diffe
 
 Use concise text that clearly identifies the series. Do not use a long sentence as a series label.
 
-## Template content
+## Custom text
 
-Use the series-label template when the label requires custom React content.
+`ChartSeriesLabel` has no `template` prop. Supply the label content through `text`; when it is omitted, the series `name` is used.
 
 ```tsx
 <ChartSeries
@@ -100,16 +100,11 @@ Use the series-label template when the label requires custom React content.
   type="Line"
   name="Revenue"
 >
-  <ChartSeriesLabel
-    visible={true}
-    template={(props) => (
-      <span>{props.series.name}</span>
-    )}
-  />
+  <ChartSeriesLabel visible={true} text="Revenue (USD)" />
 </ChartSeries>
 ```
 
-Keep the template output small and presentation-focused. Avoid interactive controls, complex layouts, or large blocks of text inside the series label.
+The full `ChartSeriesLabel` API is `visible`, `text`, `font`, `background`, `border`, `opacity`, and `showOverlapText`. Keep the text short.
 
 ## Series-label appearance
 
@@ -193,17 +188,7 @@ When several labels are difficult to read:
 
 ## Rotation
 
-Use the series-label rotation API only when angled text improves readability.
-
-```tsx
-<ChartSeriesLabel
-  visible={true}
-  enableRotation={true}
-  rotationAngle={45}
-/>
-```
-
-Do not use an unverified `angle` property. Keep rotation moderate so the label remains readable.
+`ChartSeriesLabel` does not support rotation: there is no `enableRotation`, `rotationAngle`, or `angle` prop. If long labels collide, shorten `text`, set `showOverlapText={false}`, or give the plot more room. Rotation is available on `ChartDataLabel` (`enableRotation`, `rotationAngle`) and `ChartAxisLabel` (`rotationAngle`), not on series labels.
 
 ## Multiple series labels
 

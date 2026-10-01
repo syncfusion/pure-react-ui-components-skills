@@ -1,6 +1,6 @@
 # Print and Export Reference
 
-Use the package-provided static chart functions when a Pure React Cartesian chart or pie chart must print or export. Prepare the chart for the target page or image size first, then call `print`, `exportImage`, or `exportPDF` with a fully initialized chart instance.
+Use the package-provided static functions when a Pure React Cartesian chart or pie chart must print or export. Prepare the chart for the target page or image size first, then call `exportChart` (image, PDF, Excel, or CSV) or `print` with a fully initialized chart instance.
 
 ## Core rules
 
@@ -16,11 +16,37 @@ Use the package-provided static chart functions when a Pure React Cartesian char
 
 The current Pure React Chart static API provides:
 
-- `exportImage(chart, type, fileName)` for image export
-- `exportPDF(chart, fileName, orientation?, header?, footer?)` for PDF export
-- `print(chart)` to open a print window and trigger the browser print dialog
+- `exportChart(chart, type, fileName?, orientation?, header?, footer?)`: the single public export entry point for every format
+- `print(chart)`: opens a print window and triggers the browser print dialog
 
-These functions accept either a Cartesian chart instance or a pie-chart instance. The chart must be fully initialized and contain a valid root element.
+`exportChart` accepts these `ExportType` values:
+
+| `type` | Output | Notes |
+| --- | --- | --- |
+| `"SVG"` | Vector image | Best for scaling and further editing |
+| `"PNG"` | Lossless raster image | Best default for documents and slides |
+| `"JPG"` | Compressed raster image | Smaller files; no transparency |
+| `"PDF"` | PDF document containing the chart image | Uses `orientation`, `header`, `footer` |
+| `"XLSX"` | Excel workbook containing the chart **data** | Exports categories and series values, not the picture |
+| `"CSV"` | Comma-separated chart **data** | Same data shape as XLSX |
+
+`fileName` is the name without an extension; the extension is added automatically. When `fileName` is omitted, empty, or whitespace, `"Chart"` is used.
+
+All functions accept either a Cartesian `IChart` or a pie-chart `IPieChart` instance. The chart must be fully initialized and contain a valid root element; otherwise the call returns without exporting.
+
+### Deprecated functions
+
+`exportImage(chart, type, fileName)` and `exportPDF(chart, fileName, orientation?, header?, footer?)` still work, but they are deprecated and only delegate to `exportChart`. They will be removed in a future major release. Generate new code with `exportChart`, and migrate existing calls:
+
+```tsx
+// Before (deprecated)
+exportImage(chart, "PNG", "sales");
+exportPDF(chart, "sales", PdfPageOrientation.Landscape);
+
+// After
+exportChart(chart, "PNG", "sales");
+exportChart(chart, "PDF", "sales", PdfPageOrientation.Landscape);
+```
 
 ## Do not use undocumented instance methods
 
@@ -31,11 +57,11 @@ chartRef.current?.export("PNG", "sales-chart");
 chartRef.current?.print();
 ```
 
-Use the exported static functions documented for the package version instead.
+Use the exported static functions instead.
 
 ## Chart instance pattern
 
-Keep a reference to the initialized chart. The chart forwards `IChart` through `ref`; its `element` is set once mounted, so the static functions are safe to call after the first render commits. There is no `onLoaded` event on the chart — gate actions with a mounted state flag if the UI must disable them before the first render.
+Keep a reference to the initialized chart. The chart forwards `IChart` through `ref`; its `element` is set once mounted, so the static functions are safe to call after the first render commits. There is no `onLoaded` event on the chart. Gate actions with a mounted state flag if the UI must disable them before the first render.
 
 ```tsx
 import { useEffect, useRef, useState } from "react";
@@ -43,11 +69,16 @@ import {
   Chart,
   ChartSeries,
   ChartSeriesCollection,
-  exportImage,
-  exportPDF,
+  exportChart,
   print,
 } from "@syncfusion/react-charts";
-import type { IChart } from "@syncfusion/react-charts";
+import type { ExportType, IChart } from "@syncfusion/react-charts";
+
+const data = [
+  { month: "Jan", sales: 35 },
+  { month: "Feb", sales: 28 },
+  { month: "Mar", sales: 34 },
+];
 
 export default function ExportableChart() {
   const chartRef = useRef<IChart | null>(null);
@@ -57,43 +88,30 @@ export default function ExportableChart() {
     setReady(true);
   }, []);
 
+  const handleExport = (type: ExportType): void => {
+    if (chartRef.current) {
+      exportChart(chartRef.current, type, "monthly-sales");
+    }
+  };
+
   const handlePrint = (): void => {
     if (chartRef.current) {
       print(chartRef.current);
     }
   };
 
-  const handlePngExport = (): void => {
-    if (chartRef.current) {
-      exportImage(chartRef.current, "PNG", "monthly-sales");
-    }
-  };
-
-  const handlePdfExport = (): void => {
-    if (chartRef.current) {
-      exportPDF(chartRef.current, "monthly-sales", "Landscape");
-    }
-  };
-
   return (
     <section>
-      <div className="chart-actions" aria-label="Chart output actions">
-        <button type="button" onClick={handlePrint} disabled={!ready}>
-          Print chart
-        </button>
-        <button type="button" onClick={handlePngExport} disabled={!ready}>
-          Export PNG
-        </button>
-        <button type="button" onClick={handlePdfExport} disabled={!ready}>
-          Export PDF
-        </button>
+      <div className="chart-actions" role="group" aria-label="Chart output actions">
+        <button type="button" onClick={handlePrint} disabled={!ready}>Print</button>
+        <button type="button" onClick={() => handleExport("PNG")} disabled={!ready}>PNG</button>
+        <button type="button" onClick={() => handleExport("SVG")} disabled={!ready}>SVG</button>
+        <button type="button" onClick={() => handleExport("PDF")} disabled={!ready}>PDF</button>
+        <button type="button" onClick={() => handleExport("XLSX")} disabled={!ready}>Excel</button>
+        <button type="button" onClick={() => handleExport("CSV")} disabled={!ready}>CSV</button>
       </div>
 
-      <Chart
-        ref={chartRef}
-        width="100%"
-        height="420px"
-      >
+      <Chart ref={chartRef} width="100%" height="420px">
         <ChartSeriesCollection>
           <ChartSeries
             dataSource={data}
@@ -109,61 +127,60 @@ export default function ExportableChart() {
 }
 ```
 
-The static functions themselves require an initialized `IChart` or `IPieChart` with a valid element; they return early if `element` is missing.
-
 ## Image export
-
-Use `exportImage` with the desired `ExportType` and a filename without an extension.
 
 ```tsx
 const handleImageExport = (): void => {
   const chart = chartRef.current;
-
   if (!chart) {
     return;
   }
-
-  exportImage(chart, "PNG", "quarterly-revenue");
+  exportChart(chart, "PNG", "quarterly-revenue");
 };
 ```
 
-Use a lossless raster format when text clarity is important. Inspect exported text, thin gridlines, borders, and transparency against the intended destination background.
-
-Do not append an extension unless the current API explicitly requires it. The documented `fileName` parameter is the name without the extension.
+Use `PNG` when text clarity matters and `SVG` when the image will be scaled or edited. Inspect exported text, thin gridlines, borders, and transparency against the intended destination background. `JPG` has no transparency, so the chart background is filled.
 
 ## PDF export
 
-Use `exportPDF` for a document-oriented output. Select portrait or landscape according to the chart aspect ratio.
+Use `"PDF"` for a document-oriented output. The orientation is a `PdfPageOrientation` value from `@syncfusion/pdf-export` (a dependency of the charts package). The header and footer are `{ content, fontSize?, x?, y? }` objects; `content` is required. Header font size defaults to `14`, footer to `12`, and `x`/`y` default to `10`.
 
 ```tsx
+import { PdfPageOrientation } from "@syncfusion/pdf-export";
+import { exportChart } from "@syncfusion/react-charts";
+
 const handlePdfExport = (): void => {
   const chart = chartRef.current;
-
   if (!chart) {
     return;
   }
 
-  exportPDF(
+  exportChart(
     chart,
+    "PDF",
     "quarterly-revenue",
-    "Landscape",
-    {
-      text: "Quarterly Revenue",
-      fontSize: 14,
-      x: 24,
-      y: 18,
-    },
-    {
-      text: "Generated from the analytics dashboard",
-      fontSize: 9,
-      x: 24,
-      y: 18,
-    },
+    PdfPageOrientation.Landscape,
+    { content: "Quarterly Revenue", fontSize: 14, x: 24, y: 10 },
+    { content: "Generated from the analytics dashboard", fontSize: 9, x: 24, y: 10 },
   );
 };
 ```
 
-The header and footer arguments are optional. Verify `PdfPageOrientation` and `IPdfTextArgs` values against the installed version before finalizing typed production code.
+Do not use a `text` key for the header or footer. The field is `content`. The `orientation`, `header`, and `footer` arguments are ignored for every type other than `"PDF"`.
+
+## Data export (Excel and CSV)
+
+`"XLSX"` and `"CSV"` export the chart's **data**, not its appearance. The export preserves visible categories, series values, numeric values, missing cells, and the extra fields of specialized series (for example `high`/`low`/`open`/`close` for financial series). Use it to give users a "Download data" action next to the chart.
+
+```tsx
+const downloadData = (format: "XLSX" | "CSV"): void => {
+  if (chartRef.current) {
+    exportChart(chartRef.current, format, "quarterly-revenue");
+  }
+};
+```
+
+Data export works for both `Chart` and `PieChart`. Hidden series (toggled off through the legend) are not part of the visible data. Do not build a manual CSV string from `dataSource` when the user only wants the plotted data.
 
 ## Printing
 
@@ -190,7 +207,7 @@ import {
   PieChart,
   PieChartSeries,
   PieChartSeriesCollection,
-  exportImage,
+  exportChart,
   print,
 } from "@syncfusion/react-charts";
 import type { IPieChart } from "@syncfusion/react-charts";
@@ -199,7 +216,7 @@ const pieRef = useRef<IPieChart | null>(null);
 
 const exportPie = (): void => {
   if (pieRef.current) {
-    exportImage(pieRef.current, "PNG", "market-share");
+    exportChart(pieRef.current, "PNG", "market-share");
   }
 };
 
@@ -334,11 +351,14 @@ Use native buttons with clear labels and disabled states.
   <button type="button" onClick={handlePrint} disabled={!ready}>
     Print
   </button>
-  <button type="button" onClick={handlePngExport} disabled={!ready}>
+  <button type="button" onClick={() => handleExport("PNG")} disabled={!ready}>
     Download PNG
   </button>
-  <button type="button" onClick={handlePdfExport} disabled={!ready}>
+  <button type="button" onClick={() => handleExport("PDF")} disabled={!ready}>
     Download PDF
+  </button>
+  <button type="button" onClick={() => handleExport("CSV")} disabled={!ready}>
+    Download data (CSV)
   </button>
 </div>
 ```
@@ -356,6 +376,7 @@ Report failures through an accessible status message rather than silently doing 
 Test each required output independently:
 
 - PNG or other requested image type
+- XLSX/CSV data export opened in a spreadsheet application
 - PDF in portrait and landscape as applicable
 - browser print preview
 - physical or virtual printer output
@@ -399,15 +420,15 @@ Do not export a large logical chart into a very small output size. Use a dedicat
 
 Before returning print or export code:
 
-1. Use `print`, `exportImage`, or `exportPDF` from the package's documented static API.
+1. Use `exportChart` or `print` from the package's static API; do not generate the deprecated `exportImage` / `exportPDF`.
 2. Pass a fully initialized `IChart` or `IPieChart` instance.
 3. Do not invent imperative instance methods.
 4. Trigger print or download from a user action.
 5. Disable controls until the chart is ready.
 6. Use a filename without an extension when required by the static API.
-7. Select a supported image export type.
+7. Select a supported `ExportType`: `SVG`, `PNG`, `JPG`, `PDF`, `XLSX`, or `CSV`.
 8. Choose PDF orientation from the chart aspect ratio.
-9. Verify optional PDF header and footer arguments against the installed version.
+9. Use `PdfPageOrientation` from `@syncfusion/pdf-export` and `{ content, fontSize?, x?, y? }` for PDF header and footer.
 10. Give the chart a predictable output size.
 11. Wait for layout updates before exporting a resized chart.
 12. Keep titles, legends, labels, and annotations inside the output bounds.

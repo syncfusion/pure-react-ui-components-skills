@@ -266,26 +266,21 @@ Do not implement custom state solely to reproduce the built-in show/hide behavio
 The legend click handler belongs to the root `Chart`, not `ChartLegend`.
 
 ```tsx
-const handleLegendClick = (args: LegendClickProps): string => {
-  return args.series?.name ?? "";
+import type { LegendClickEvent } from "@syncfusion/react-charts";
+
+const handleLegendClick = (args: LegendClickEvent): void => {
+  console.log(args.seriesName, args.text, args.shape);
+  // Set args.cancel = true to keep the series visible.
 };
 
-<Chart legendClick={handleLegendClick}>
+<Chart onLegendClick={handleLegendClick}>
   <ChartLegend visible={true} />
 </Chart>
 ```
 
-Use the exact event prop and exported argument type documented by the current Pure React `ChartProps` API. Do not assume EJ2-style event argument fields or names.
+The prop is `onLegendClick` on the root `Chart` (the un-prefixed `legendClick` is not supported). `LegendClickEvent` exposes `seriesName`, `text`, `shape`, and `cancel`. There is no `args.series` object and no `preventDefault()`; set `args.cancel = true` to stop the built-in toggle.
 
-In particular, do not automatically generate:
-
-```tsx
-<Chart onLegendClick={handleLegendClick}>
-```
-
-unless `onLegendClick` is confirmed by the current Pure React API. The Pure React package may expose event names without the `on` prefix.
-
-When handling the event, inspect only fields documented by the exported event type. Do not assume `args.series.name`, `args.seriesName`, `preventDefault`, or cancellation behavior without verification.
+For `PieChart`, use `onLegendClick` with `PieLegendClickEvent`, which has the same fields.
 
 ## Background, border, and opacity
 

@@ -54,16 +54,23 @@ The official `ChartAxisLabelProps` API documents these implementation properties
 - `fontWeight`: string; default `""`
 - `format`: string; default `""`
 - `formatter`: `(value: number, text: string) => string | boolean`; default `null`
-- `intersectMode`: controls overlapping labels
+- `intersectAction`: `"None" | "Wrap" | "Trim" | "Hide" | "MultipleRows" | "Rotate45" | "Rotate90"`; default `"Trim"`
 - `maxLabelWidth`: maximum label width used by trimming and wrapping; source default `34`
+- `opacity`: number; default `1`
+- `padding`: space between labels and the axis line; default `5`
+- `placement`: `"BetweenTicks" | "OnTicks"` (category axis); default `"BetweenTicks"`
 - `position`: `"Inside" | "Outside"`; default is outside placement
 - `rotationAngle`: number; default `0`
+- `skeleton`: date-time skeleton used to format DateTime labels; default `""`
+- `template`: custom HTML string or function for label content; default `""`
+
+`ChartAxisLabel` uses `intersectAction`. Do not confuse it with `ChartDataLabel.intersectMode`, which is a different property on a different component with a smaller value set (`None`, `Hide`, `Rotate90`).
 
 Use only properties owned by `ChartAxisLabel`. Axis range, intervals, value type, category indexing, and label density belong to the parent axis.
 
 ## Smart overlap handling
 
-Use `intersectMode` when labels collide.
+Use `intersectAction` when labels collide.
 
 Supported source values:
 
@@ -77,7 +84,7 @@ Supported source values:
 
 ```tsx
 <ChartPrimaryXAxis valueType="Category">
-  <ChartAxisLabel intersectMode="Rotate45" />
+  <ChartAxisLabel intersectAction="Rotate45" />
 </ChartPrimaryXAxis>
 ```
 
@@ -248,7 +255,7 @@ Do not enable both trimming and wrapping without an explicit design requirement 
   valueType="Category"
   maxLabelDensity={2}
 >
-  <ChartAxisLabel intersectMode="Hide" />
+  <ChartAxisLabel intersectAction="Hide" />
 </ChartPrimaryXAxis>
 ```
 
@@ -317,7 +324,7 @@ export default function AxisLabelsChart() {
         maxLabelDensity={3}
       >
         <ChartAxisLabel
-          intersectMode="Rotate45"
+          intersectAction="Rotate45"
           edgeLabelPlacement="Shift"
           enableTrim={true}
           maxLabelWidth={110}
@@ -357,7 +364,7 @@ Before returning an axis-label implementation:
 1. Import `ChartAxisLabel` from `@syncfusion/react-charts`.
 2. Place `ChartAxisLabel` inside the axis it configures.
 3. Match the parent axis `valueType` to the bound data.
-4. Use only documented `intersectMode` values.
+4. Use only documented `intersectAction` values.
 5. Use only `Inside` or `Outside` for `position`.
 6. Use only `None`, `Hide`, or `Shift` for `edgeLabelPlacement`.
 7. Use a string value for `fontSize`.

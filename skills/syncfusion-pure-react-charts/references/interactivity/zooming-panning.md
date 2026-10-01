@@ -469,6 +469,14 @@ Pure React component configuration:
 
 Use the Pure React component and shortened property names.
 
+## Minimum visible points
+
+`minimumVisiblePoints` on `ChartZoomSettings` (default `null`, meaning no limit) sets the minimum number of data points that must remain visible after zooming in by mouse wheel, pinch, selection rectangle, or the toolbar Zoom In button. Use it to stop users zooming so far that a single point fills the plot.
+
+```tsx
+<ChartZoomSettings mouseWheelZoom={true} selectionZoom={true} minimumVisiblePoints={5} />
+```
+
 ## Common errors
 
 ### Wrong property names

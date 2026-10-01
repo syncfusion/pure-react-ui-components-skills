@@ -434,12 +434,11 @@ Use a non-empty title, CSS-style font-size string, and sufficient contrast.
 
 ### Grid lines are invisible
 
-Keep the grid-line component inside its axis and use a visible width and color.
+Keep the grid-line component inside its axis and use a visible width and color. Grid-line components have no `visible` prop; set `width={0}` to hide a grid line.
 
 ```tsx
 <ChartPrimaryYAxis valueType="Double">
   <ChartMajorGridLines
-    visible={true}
     width={1}
     color="#D9D9D9"
     dashArray=""

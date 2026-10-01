@@ -8,7 +8,7 @@ Use the Pure React pie-chart component family exported by `@syncfusion/react-cha
 - Place `PieChartSeries` inside `PieChartSeriesCollection`.
 - Bind category and numeric fields through `xField` and `yField`.
 - Place `PieChartDataLabel` inside its owning series.
-- Place `PieChartTitle`, `PieChartSubtitle`, `PieChartLegend`, and `PieChartTooltip` directly inside `PieChart`.
+- Place `PieChartTitle`, `PieChartSubtitle`, `PieChartLegend`, `PieChartTooltip`, `PieChartCenterLabel`, `PieChartHighlight`, `PieChartSelection`, and `PieChartAnnotationCollection` directly inside `PieChart`.
 - Create a donut by setting the series `innerRadius` above `0%`.
 - Use pie or donut only for part-to-whole data with one meaningful total.
 - Prefer a bar chart when exact ranking or comparison is the primary task.
@@ -22,6 +22,11 @@ PieChart
 ├── PieChartSubtitle
 ├── PieChartLegend
 ├── PieChartTooltip
+├── PieChartCenterLabel          (donut center text)
+├── PieChartHighlight            (hover emphasis)
+├── PieChartSelection            (click selection)
+├── PieChartAnnotationCollection
+│   └── PieChartAnnotation
 └── PieChartSeriesCollection
     └── PieChartSeries
         └── PieChartDataLabel
@@ -398,7 +403,9 @@ Use package properties for exploded slices.
 />
 ```
 
-Use explosion sparingly. Exploding every slice usually weakens the part-to-whole structure.
+Set `explodeAll={true}` to explode every slice on initial load (default `false`). Use explosion sparingly; exploding every slice usually weakens the part-to-whole structure.
+
+`showBorderOnHover` (default `true`) draws a border around the hovered slice. Set it to `false` for a flatter look, for example when `PieChartHighlight` already provides hover feedback.
 
 ## Start and end angles
 
@@ -437,6 +444,121 @@ Use root `center` and series `radius` or `innerRadius` for layout adjustments.
 ```
 
 Do not use absolute-positioned slice elements to imitate center or radius changes.
+
+## Center label (donut)
+
+Use `PieChartCenterLabel` to show text in the hole of a donut, such as a total or KPI. It is a direct child of `PieChart` and needs an `innerRadius` large enough to hold the text.
+
+```tsx
+import {
+  PieChart,
+  PieChartCenterLabel,
+  PieChartSeries,
+  PieChartSeriesCollection,
+} from "@syncfusion/react-charts";
+
+const data = [
+  { browser: "Chrome", share: 64 },
+  { browser: "Safari", share: 19 },
+  { browser: "Edge", share: 5 },
+  { browser: "Firefox", share: 3 },
+  { browser: "Other", share: 9 },
+];
+
+export default function BrowserShare() {
+  return (
+    <PieChart>
+      <PieChartCenterLabel
+        label={[
+          { text: "Browsers", textStyle: { fontSize: "14px", color: "#6B7280" } },
+          { text: "100%", textStyle: { fontSize: "24px", fontWeight: "600" } },
+        ]}
+        hoverTextFormat="${point.x}<br>${point.y}%"
+      />
+      <PieChartSeriesCollection>
+        <PieChartSeries
+          dataSource={data}
+          xField="browser"
+          yField="share"
+          innerRadius="65%"
+        />
+      </PieChartSeriesCollection>
+    </PieChart>
+  );
+}
+```
+
+`PieChartCenterLabel` props:
+
+- `label: { text?: string; textStyle?: PieChartCenterLabelTextProps }[]`, default `[]`: each entry is one line, rendered top to bottom
+- `hoverTextFormat: string`, default `""`: replaces the center text while a slice is hovered. `${point.x}` and `${point.y}` are substituted with the hovered slice's category and value; `<br>` starts a new line. When the pointer leaves the slice, the `label` text is restored.
+
+`textStyle` accepts `fontSize`, `fontWeight`, `fontStyle`, `fontFamily`, `color`, `opacity`, and `textAlignment` (`"Left" | "Center" | "Right"`).
+
+Do not draw center text with an absolutely positioned HTML overlay or an annotation when `PieChartCenterLabel` meets the need.
+
+## Highlight and selection
+
+Hover highlight and click selection are configured with `PieChartHighlight` and `PieChartSelection`, both direct children of `PieChart`. Both are off by default (`mode="None"`).
+
+```tsx
+<PieChart>
+  <PieChartHighlight mode="Point" fill="#F59E0B" />
+  <PieChartSelection
+    mode="Point"
+    allowMultiSelection={true}
+    selectedDataIndexes={[{ pointIndex: 0 }]}
+    pattern="DiagonalForward"
+  />
+  <PieChartSeriesCollection>
+    <PieChartSeries dataSource={data} xField="browser" yField="share" />
+  </PieChartSeriesCollection>
+</PieChart>
+```
+
+`PieChartHighlight` props: `mode` (`"None" | "Point"`), `fill` (highlight color), `pattern` (`PieSelectionPattern`).
+
+`PieChartSelection` props: `mode` (`"None" | "Point"`), `allowMultiSelection` (default `false`), `selectedDataIndexes` (`{ pointIndex }[]`, slices selected on first render), `pattern` (`PieSelectionPattern`).
+
+`PieSelectionPattern` values: `None`, `Chessboard`, `Dots`, `DiagonalForward`, `Crosshatch`, `Pacman`, `DiagonalBackward`, `Grid`, `Turquoise`, `Star`, `Triangle`, `Circle`, `Tile`, `HorizontalDash`, `VerticalDash`, `Rectangle`, `Box`, `VerticalStripe`, `HorizontalStripe`, `Bubble`. Patterns give a non-color cue for selected slices, which helps color-blind users and grayscale printing.
+
+Pie selection supports only `Point` mode. The Cartesian `ChartSelection` / `ChartHighlight` components and their `Series` / `Cluster` modes do not apply to `PieChart`.
+
+## Annotations
+
+Place `PieChartAnnotation` elements inside `PieChartAnnotationCollection`, directly under `PieChart`.
+
+```tsx
+<PieChart>
+  <PieChartAnnotationCollection>
+    <PieChartAnnotation
+      x="Chrome"
+      y={64}
+      coordinateUnit="Point"
+      content="<div style='font-weight:600'>Market leader</div>"
+    />
+    <PieChartAnnotation
+      x={20}
+      y={20}
+      coordinateUnit="Pixel"
+      hAlign="Left"
+      vAlign="Top"
+      content="Source: StatCounter"
+    />
+  </PieChartAnnotationCollection>
+  <PieChartSeriesCollection>
+    <PieChartSeries dataSource={data} xField="browser" yField="share" />
+  </PieChartSeriesCollection>
+</PieChart>
+```
+
+`PieChartAnnotation` props: `x`, `y`, `content` (HTML string, plain text, or a DOM element id), `coordinateUnit` (`"Point"`, positioned at a slice, or `"Pixel"`, positioned in chart pixels; default `"Point"`), `hAlign`, `vAlign` (default `"Center"`), and `accessibility`.
+
+With `coordinateUnit="Point"`, the annotation is anchored to the slice whose `x` **and** `y` both exactly match a data point (here `"Chrome"` and `64`). If no visible slice matches, the annotation is not rendered. Content is sanitized before rendering.
+
+## Export
+
+Pie charts support the same `exportChart` and `print` functions as Cartesian charts, including `XLSX` and `CSV` data export. See [print-and-export.md](./print-and-export.md).
 
 ## Responsive layout
 
@@ -667,16 +789,17 @@ Before returning a pie or donut implementation:
 7. Confirm the values represent one meaningful total.
 8. Use `innerRadius` to create a donut.
 9. Place data labels inside their owning series.
-10. Place title, subtitle, legend, and tooltip directly inside `PieChart`.
-11. Use `colorField`, `palettes`, or `applyPattern` instead of custom slice rendering.
-12. Use package properties for explosion, angles, radius, and center.
-13. Keep slice count low enough for meaningful comparison.
-14. Prefer a bar chart when precise ranking is required.
-15. Provide accessible names and a visible focus outline.
-16. Do not rely only on color or hover.
-17. Provide a text summary or table for precise values when needed.
-18. Use pie-specific event types.
-19. Give the chart a predictable responsive size.
-20. Do not mix Cartesian, EJ2, or handcrafted pie geometry with the Pure React pie family.
-21. Ensure every imported symbol is used.
-22. Emit valid, compact, unescaped TSX.
+10. Place title, subtitle, legend, tooltip, center label, highlight, selection, and the annotation collection directly inside `PieChart`.
+11. Use `PieChartCenterLabel` for donut center text instead of overlays.
+12. Use `colorField`, `palettes`, or `applyPattern` instead of custom slice rendering.
+13. Use package properties for explosion, angles, radius, and center.
+14. Keep slice count low enough for meaningful comparison.
+15. Prefer a bar chart when precise ranking is required.
+16. Provide accessible names and a visible focus outline.
+17. Do not rely only on color or hover.
+18. Provide a text summary or table for precise values when needed.
+19. Use pie-specific event types.
+20. Give the chart a predictable responsive size.
+21. Do not mix Cartesian, EJ2, or handcrafted pie geometry with the Pure React pie family.
+22. Ensure every imported symbol is used.
+23. Emit valid, compact, unescaped TSX.

@@ -251,7 +251,7 @@ Use label collision handling inside `ChartAxisLabel`.
 >
   <ChartAxisLabel
     format="MMM"
-    intersectMode="Rotate45"
+    intersectAction="Rotate45"
     edgeLabelPlacement="Shift"
   />
 </ChartPrimaryXAxis>
@@ -259,7 +259,7 @@ Use label collision handling inside `ChartAxisLabel`.
 
 Relevant label options include:
 
-- `intersectMode`: `None`, `Hide`, `Trim`, `Wrap`, `MultipleRows`, `Rotate45`, or `Rotate90`
+- `intersectAction`: `None`, `Hide`, `Trim`, `Wrap`, `MultipleRows`, `Rotate45`, or `Rotate90`
 - `rotationAngle`: manual angle
 - `edgeLabelPlacement`: `None`, `Hide`, or `Shift`
 - `enableTrim` and `maxLabelWidth`
@@ -316,7 +316,7 @@ export default function DateTimeAxisChart() {
         <ChartAxisLabel
           format="MMM"
           edgeLabelPlacement="Shift"
-          intersectMode="Rotate45"
+          intersectAction="Rotate45"
         />
       </ChartPrimaryXAxis>
 
@@ -337,6 +337,14 @@ export default function DateTimeAxisChart() {
     </Chart>
   );
 }
+```
+
+## Skeleton type
+
+`skeletonType` on the axis (`ChartPrimaryXAxis`, `ChartPrimaryYAxis`, or `ChartAxis`) chooses which part of a date-time value a `skeleton` formats: `"Date"`, `"Time"`, or `"DateTime"` (default).
+
+```tsx
+<ChartPrimaryXAxis valueType="DateTime" skeleton="short" skeletonType="Time" />
 ```
 
 ## Common errors

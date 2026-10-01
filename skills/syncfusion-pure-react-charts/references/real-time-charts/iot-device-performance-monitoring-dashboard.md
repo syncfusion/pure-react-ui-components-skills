@@ -375,22 +375,20 @@ Use thresholds appropriate to the device specification and deployment environmen
   minimum={0}
   maximum={100}
 >
-  <ChartStriplineCollection>
-    <ChartStripline
-      start={80}
-      size={10}
-      text="Warning"
-      color="rgba(247, 99, 12, 0.14)"
+  <ChartStripLines>
+    <ChartStripLine
+      range={{ start: 80, end: 90 }}
+      style={{ color: "rgba(247, 99, 12, 0.14)" }}
+      text={{ content: "Warning" }}
       visible={true}
     />
-    <ChartStripline
-      start={90}
-      size={10}
-      text="Critical"
-      color="rgba(164, 38, 44, 0.16)"
+    <ChartStripLine
+      range={{ start: 90, end: 100 }}
+      style={{ color: "rgba(164, 38, 44, 0.16)" }}
+      text={{ content: "Critical" }}
       visible={true}
     />
-  </ChartStriplineCollection>
+  </ChartStripLines>
 </ChartPrimaryYAxis>
 ```
 

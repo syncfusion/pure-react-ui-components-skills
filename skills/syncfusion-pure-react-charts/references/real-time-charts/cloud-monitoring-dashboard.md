@@ -336,22 +336,20 @@ Use striplines for stable warning or critical thresholds and annotations for dis
   minimum={0}
   maximum={100}
 >
-  <ChartStriplineCollection>
-    <ChartStripline
-      start={80}
-      size={10}
-      color="rgba(247, 99, 12, 0.14)"
-      text="Warning"
+  <ChartStripLines>
+    <ChartStripLine
+      range={{ start: 80, end: 90 }}
+      style={{ color: "rgba(247, 99, 12, 0.14)" }}
+      text={{ content: "Warning" }}
       visible={true}
     />
-    <ChartStripline
-      start={90}
-      size={10}
-      color="rgba(164, 38, 44, 0.16)"
-      text="Critical"
+    <ChartStripLine
+      range={{ start: 90, end: 100 }}
+      style={{ color: "rgba(164, 38, 44, 0.16)" }}
+      text={{ content: "Critical" }}
       visible={true}
     />
-  </ChartStriplineCollection>
+  </ChartStripLines>
 </ChartPrimaryYAxis>
 ```
 

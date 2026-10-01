@@ -479,6 +479,16 @@ export default function DataLabelsChart() {
 }
 ```
 
+## Zero values
+
+`showZero` on `ChartDataLabel` (default `true`) controls whether labels are drawn for points whose value is `0`. Set it to `false` to remove "0" labels from sparse data. `PieChartDataLabel` has the same `showZero` prop.
+
+```tsx
+<ChartMarker visible={false}>
+  <ChartDataLabel visible={true} showZero={false} />
+</ChartMarker>
+```
+
 ## Common errors
 
 ### Wrong hierarchy
