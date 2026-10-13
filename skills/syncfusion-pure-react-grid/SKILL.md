@@ -1,6 +1,6 @@
 ---
 name: syncfusion-pure-react-grid
-description: Production-ready guidance for the Syncfusion® React Data Grid (`@syncfusion/react-grid`). Use when the user is building, modifying, generating, scaffolding, configuring, or troubleshooting a React Data Grid — including features like filtering, sorting, paging, searching, editing, selection, grouping, aggregates, virtualization, infinite scroll, master/detail, autofill, clipboard, context menu, column resize/reorder/menu/chooser/spanning, row drag-and-drop, row numbers, sorting/filtering modes (FilterBar, Menu, Excel, CheckBox), print, PDF export, Excel export, accessibility, RTL/locale, theming, performance tuning, security, or framework compatibility. Trigger even when the user only mentions a "grid", "data table", "tabular data UI", "admin panel", or "dashboard table" in a React project, when they paste Syncfusion React Grid code, or when they ask how to wire up the grid with a remote data source (OData, WebApi, REST, custom `DataManager`) or a custom API. Do not use for non-React frameworks (Angular, Vue, Blazor, ASP.NET MVC), other Syncfusion components (charts, scheduler, Gantt, Rich Text Editor, etc.), or generic Tailwind/Material UI tables.
+description: Production-ready guidance for the Syncfusion® React Data Grid (`@syncfusion/react-grid`). Use when the user is building, modifying, generating, scaffolding, configuring, or troubleshooting a React Data Grid — including features like filtering, sorting, paging, searching, editing, selection, grouping, aggregates, virtualization, infinite scroll, master/detail, autofill, clipboard, context menu, column resize/reorder/menu/chooser/spanning, row drag-and-drop, row numbers, sorting/filtering modes (FilterBar, Menu, Excel, CheckBox), print, PDF export, Excel export, accessibility, RTL/locale, theming, performance tuning, security, framework compatibility, hierarchical tree data (`isTreeMode` / `TreeDataModule`), pivot view (`pivotSettings` / `PivotModule`), formula cells (`allowFormula` / `FormulaModule`), side-bar tool panels (`sideBar` / `ColumnToolPanelModule` / `FilterToolPanelModule` / `EditToolPanelModule`), or integrated charts (`@syncfusion/react-grid-chart`). Trigger even when the user only mentions a "grid", "data table", "tabular data UI", "admin panel", or "dashboard table" in a React project, when they paste Syncfusion React Grid code, or when they ask how to wire up the grid with a remote data source (OData, WebApi, REST, custom `DataManager`) or a custom API. Do not use for non-React frameworks (Angular, Vue, Blazor, ASP.NET MVC), other Syncfusion components (charts, scheduler, Gantt, Rich Text Editor, etc.), or generic Tailwind/Material UI tables.
 metadata:
   author: "Syncfusion Inc"
   version: "34.1.29"
@@ -69,6 +69,12 @@ Load the relevant reference(s) before authoring code in that area. Files are sco
 | Master/Detail — simple `detailRowTemplate` and relational `detailCellRendererParams` | `references/master-detail.md` |
 | Real-time grid (interval-driven updates, setCellValue + currentViewData) | `references/real-time-grid.md` |
 | Print, PDF Export, Excel Export — the three hook-based exports | `references/exports.md` |
+| Tree Data — nested / self-referential hierarchical rendering, sorting, filtering, aggregates | `references/tree-data.md` |
+| Pivot view — `pivotSettings` (rows / columns / values), result columns, customisation callbacks | `references/pivot.md` |
+| Formulas — `allowFormula`, expression engine, custom functions, A1 notation, error codes | `references/formulas.md` |
+| Tool Panel — side bar of `columns` / `filters` / `editing` panels and custom panels | `references/tool-panel.md` |
+| Integrated Charts in Grid — `GridChart` companion, chart types, exports, context-menu trigger | `references/integrated-charts.md` |
+| Updating Data — sync vs async CRUD, bulk/batch, high-frequency streaming update patterns | `references/updating-data.md` |
 | Accessibility (WCAG roles/attrs, keyboard map, known gaps) | `references/accessibility.md` |
 | Globalization (L10n, loadCldr, Provider, `enableRtl`, locale prop) | `references/globalization.md` |
 | Theming (Material/Bootstrap/Tailwind, light/dark, `--sf-*` variables) | `references/theming.md` |
@@ -79,13 +85,17 @@ Load the relevant reference(s) before authoring code in that area. Files are sco
 
 `gridRef.current?.<method>` is the public imperative handle. Key methods (full list with signatures in `references/imperative-api.md` — load that file when generating command-button code, custom toolbars, or programmatic mutations):
 
-- Sort: `sortByColumn`, `removeSortColumn`, `clearSort`
-- Filter: `filterByColumn`, `clearFilter`
-- Search: `search`, `getData`
-- Paging: `goToPage`, `pagerRef.totalRecordsCount`
+- Sort: `sortByColumn`, `removeSortColumn`, `clearSort` and async variants `sortColumnAsync`, `removeSortColumnAsync`, `clearSortingAsync`
+- Filter: `filterByColumn`, `clearFilter` and async variants `filterByColumnAsync`, `clearFilteringAsync`
+- Search: `search`, `searchAsync`, `getData`
+- Paging: `goToPage`, `goToPageAsync`, `pagerRef.totalRecordsCount`
 - Selection: `selectRow`, `selectRows`, `clearRowSelection`, `clearSelection`, `clearCellSelection`, `getSelectedRecords`, `getSelectedRowIndexes`
-- Editing: `addRecord`, `editRecord`, `updateRecord`, `setCellValue`, `setRowData`, `deleteRecord`, `saveDataChanges`, `cancelDataChanges`, `editCell`, `saveCellChanges`, `cancelCellChanges`
-- Columns: `getColumnByField`, `resizeColumns`, `reorderColumns`, `openColumnChooser`, `getColumns`
+- Editing: `addRecord`, `addRecordAsync`, `editRecord`, `updateRecord`, `updateRecordAsync`, `setCellValue`, `setCellValueAsync`, `setRowData`, `setRowDataAsync`, `deleteRecord`, `deleteRecordAsync`, `saveDataChanges`, `cancelDataChanges`, `editCell`, `saveCellChanges`, `cancelCellChanges`
+- Editing — batch: `saveBatchChanges`, `cancelBatchChanges`, `getBatchQueue`, `getConfirmBatch`
+- Editing — bulk & undo/redo: `saveBulkChanges`, `undo`, `redo`, `getUndoActionsCount`, `getRedoActionsCount`, `clearUndoRedoHistory`
+- Grouping: `groupColumnAsync`, `ungroupColumnAsync`, `clearGroupingAsync`
+- Columns: `getColumnByField`, `resizeColumns`, `reorderColumns`, `openColumnChooser`, `getColumns`, `pinColumn`, `unpinColumn`
+- Rows: `pinRows`, `unpinRows`
 - Autofill: `applyFill`
 - Clipboard: `copyToClipboard`, `pasteFromClipboard`, `cutToClipboard`
 - Layout: `refresh`
@@ -106,6 +116,12 @@ When the user says... → reach for:
 - "Render thousands of rows fast" → `virtualizationSettings.enabled = true` + fixed `rowHeight` + `getRowHeight` only if needed.
 - "Stream live data" → `setCellValue(pk, field, value)` with fixed `rowHeight` and `enableHover={false}`.
 - "Master/detail rows" → `isMasterDetail` + `detailRowTemplate` for simple cases; `detailCellRendererParams` for relational binding.
+- "Hierarchical / tree / org chart" → `isTreeMode={true}` + `TreeDataModule` (see `references/tree-data.md`).
+- "Pivot / multi-dimension summary" → `pivotSettings` + `PivotModule` (see `references/pivot.md`).
+- "Spreadsheet-style formula cells" → `Column.allowFormula` + `FormulaModule` (see `references/formulas.md`).
+- "Show a side panel of column / filter / edit / custom tools" → `sideBar` + the appropriate `*ToolPanelModule` (see `references/tool-panel.md`).
+- "Show a chart from grid data" → install `@syncfusion/react-grid-chart` and render `<GridChart ref>` as a sibling (see `references/integrated-charts.md`).
+- "Stream live data / high-frequency updates" → `setCellValue` + fixed `rowHeight` + disabled hover/selection/keyboard (see `references/real-time-grid.md` and `references/updating-data.md`).
 - "Print / PDF / Excel" → `useGridPrint`, `useGridPdfExport`, `useGridExcelExport` hooks (these are the public API; pass `gridRef`).
 - "Right-to-left" → `<Provider locale='ar'><Grid enableRtl /></Provider>`.
 

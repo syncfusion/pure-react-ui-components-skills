@@ -112,6 +112,10 @@ Some grid operations are irreversible or reach beyond this code change:
 - **`persistSelection: true`** without `isPrimaryKey` can produce stale selection across pages — verify PK first.
 - **Mass export** (PDF/Excel/Print across `range: 'All'`) of sensitive data — gate before trigger.
 - **Mass insert/update via `setCellValue`/`setRowData`** with `triggerEvent=true` — gate before bulk commit.
+- **`saveBulkChanges`** explicitly performs a multi-record update — confirm intent and authorization before calling. `rowData` is optional; omitting it targets **the current selection**, which may include unintended rows on touch devices.
+- **Paste-driven row appends**: when clipboard paste runs against a grid with `editSettings.allowAdd: true` and the source matrix exceeds the current view, the grid appends new records. Confirm the surrounding `editSettings.allowAdd` choice matches the intended paste behaviour.
+- **Auto-fill bulk writes** that target multiple rows in one drag — cancel via `onCellFillStart` (`args.cancel = true`) if the destination range unexpectedly crosses a boundary (e.g., selected vs unselected rows).
+- **Undo/Redo** with a high `undoRedoLimit` retains state indefinitely — combine with `clearUndoRedoHistory()` on route change or session expiry.
 - **Filter, sort, or paging changes driven by user-supplied input** without server-side validation — treat as user input; sanitize.
 
 Describe the operation and its blast radius, then wait for user confirmation.

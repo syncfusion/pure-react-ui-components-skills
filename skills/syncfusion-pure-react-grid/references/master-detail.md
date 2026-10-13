@@ -85,6 +85,80 @@ const detailParams: DetailCellRendererParams<Parent> = {
       modules={modules} />
 ```
 
+### Nested data binding (children on the parent row)
+
+The simplest path: when the parent row already owns a child array, return it directly without an external dataset:
+
+```tsx
+const detailParams: DetailCellRendererParams<EventPlan> = {
+  detailGridOptions: {
+    columns: childColumns,
+    isMasterDetail: true,
+    modules,
+    sortSettings: { enabled: true },
+    filterSettings: { enabled: true, type: 'Menu' },
+    defaultExpandedRows: [1],
+  },
+  getDetailRowData: (params: GetDetailRowDataParams<EventPlan>) => {
+    params.successCallback(params.data.tasks || []);
+  },
+};
+
+<Grid dataSource={eventPlans} isMasterDetail detailCellRendererParams={detailParams} modules={modules} />
+```
+
+### Nested cascades (`maxNestingDepth`)
+
+`detailGridOptions.maxNestingDepth` caps how deeply nested detail grids can recurse. `currentNestingDepth` is informational on each child. Past the cap, the child grid ignores nested master/detail. Use both to build multi-tier hierarchies like `Event → Task → CheckIn`:
+
+```tsx
+const grandchildParams: DetailCellRendererParams = {
+  mappingID: 'taskId',
+  childDataSource: checkIns,
+  detailGridOptions: {
+    columns: checkInColumns,
+    isMasterDetail: false,
+    modules,
+    sortSettings: { enabled: true },
+    filterSettings: { enabled: true, type: 'Menu' },
+  },
+  getDetailRowData: (params) => {
+    const parentTaskId = (params.data as Task).taskId;
+    const rows = (params.childDataSource as CheckIn[]).filter(r => r.taskId === parentTaskId);
+    params.successCallback(rows);
+  },
+};
+
+const parentParams: DetailCellRendererParams<EventPlan> = {
+  /* … */
+  detailGridOptions: {
+    /* … */
+    maxNestingDepth: 3,
+    currentNestingDepth: 1,
+    detailCellRendererParams: grandchildParams,
+  },
+};
+```
+
+### Async / server-fetched details
+
+`getDetailRowData` can fetch and call `successCallback(rows)` when the promise resolves. This keeps the parent grid slim until a row actually expands:
+
+```ts
+getDetailRowData: (params) => {
+  fetch(`/api/cases/${params.data.caseId}/milestones`)
+    .then(r => r.json())
+    .then(rows => params.successCallback(rows));
+}
+```
+
+### Detail grid lifecycle events
+
+| Event | Fires when | Args |
+|---|---|---|
+| `onDetailGridCreated` | Nested detail grid instance is created. | `(gridRef: any)` → `args.gridRef.id`, `args.gridRef.parentData`. |
+| `onDetailGridDestroyed` | Nested detail grid is removed (collapse / unload). | `(gridRef: any)` |
+
 ### Shape
 
 `DetailCellRendererParams<T>`:

@@ -98,6 +98,21 @@ gridRef.current?.clearSort();
 
 `sortByColumn(field, direction, isMultiSort?)` — `isMultiSort = true` appends without clearing; otherwise replaces.
 
+### Asynchronous programmatic sort
+
+When sorting triggers a server round-trip (DataManager / `onDataRequest`), use the `Async` variants which return a `Promise` that resolves once the sort has been applied:
+
+```tsx
+await gridRef.current?.sortColumnAsync('Rating', 'Descending', /*isMultiSort*/ false);
+await gridRef.current?.removeSortColumnAsync('Rating');
+await gridRef.current?.clearSortingAsync();           // clear all
+await gridRef.current?.clearSortingAsync(['Rating']); // clear specific fields
+```
+
+Combine with `goToPageAsync` and `filterByColumnAsync` to chain async data operations before downstream export/print calls.
+
+`sortColumnAsync(columnName, sortDirection, isMultiSort?)`: sorts the named column. `removeSortColumnAsync(columnName)`: removes a specific column from the sort set. `clearSortingAsync(fields?)`: clears all sorts (optionally for a list of fields).
+
 ## `onSort` event
 
 `SortEvent`: `{ action: ActionType, field: string, direction: SortDirection }`.

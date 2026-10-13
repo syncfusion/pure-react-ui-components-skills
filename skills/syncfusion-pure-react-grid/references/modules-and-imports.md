@@ -43,14 +43,20 @@ Every grid you produce declares its `modules` map. Missing modules produce silen
 | **Grouping** | `GroupModule` |
 | **Aggregates** (footer + group caption) | `AggregateModule` |
 | **Column Resize** | `ResizeModule` |
-| **Column Reorder** | `ReorderModule` |
+| **Row & Column Reorder** | `ReorderModule` |
 | **Column Menu** (per-header dropdown) | (built-in; ensure `FilterModule`/`ColumnChooserModule`/`GroupModule`/`AggregateModule` present if their entries should appear in the menu) |
 | **Column Chooser** | `ColumnChooserModule` |
 | **Autofill** | `AutoFillModule` |
 | **Clipboard** | `ClipboardModule` |
 | **Context Menu** | `ContextMenuModule` |
-| **Row Reorder (drag-and-drop)** | `RowReorderModule` |
 | **Master/Detail (nested grids)** | `DetailGridModule` |
+| **Row/Column Pinning** (top/bottom/left/right) | `PinningModule` (set `pinningSettings.type: PinScope.Row | Column | Both`) |
+| **AutoFit column width** | `AutoFitModule` (pair with `ResizeModule` for runtime resize afterwards) |
+| **Tree Grid** (`isTreeMode`, hierarchical data) | `TreeDataModule` |
+| **Pivot view** (`pivotSettings`) | `PivotModule` |
+| **Formula columns** (`allowFormula`, `formulaSettings`) | `FormulaModule` |
+| **Toolbar item set** (some docs include `ToolbarModule` separately) | `ToolbarModule` |
+| **Side panel (ColumnToolPanel / FilterToolPanel / EditToolPanel)** | `ColumnToolPanelModule`, `FilterToolPanelModule`, `EditToolPanelModule` |
 | All-in-one | `GridAllModule` |
 
 ```tsx
@@ -274,13 +280,124 @@ All settings types are exported. Defaults shown where the documentation is expli
 }
 ```
 
+### `PinningSettings`
+```ts
+{
+  enabled: boolean;
+  type: PinScope;                  // 'Row' | 'Column' | 'Both'
+  allowTopPin?: boolean;          // default true (rows)
+  allowBottomPin?: boolean;       // default true (rows)
+  // Column-pin options live on Column.pinDirection (ColumnPinDirection.Left | Right | None)
+}
+```
+
+`isRowPinned?: (row: T) => 'top' | 'bottom' | null` decides initial pin position from row data when the grid first renders (or when rows are pushed after init).
+
+### `Column` pin direction
+```ts
+pinDirection?: ColumnPinDirection | ((column: ColumnProps) => ColumnPinDirection);
+// ColumnPinDirection: 'Left' | 'Right' | 'None'
+```
+
+### `EditSettings` additions
+```ts
+{
+  // …existing modes
+  allowBatchSave?: boolean;        // default false
+  allowUndoRedo?: boolean;         // default false
+  allowBatchUndoRedo?: boolean;    // default false; applies during batch virtual saves
+  undoRedoLimit?: number;          // default 5
+}
+```
+
+### `PivotSettings<T>` (Pivot view)
+```ts
+{
+  enabled: boolean;
+  rows?: string[];                                                                // row group fields (top to bottom)
+  columns?: string[];                                                             // column group fields (left to right)
+  values?: Array<{ field: string; type: 'Sum' | 'Average' | 'Min' | 'Max' | 'Count' | 'Product' | string }>;
+  showSubTotals?: boolean;
+  showGrandTotals?: boolean;
+  defaultExpanded?: boolean;                                                      // expand all groups on first render
+  memberSorts?: Array<{ field: string; direction: 'Ascending' | 'Descending' }>; // initial sort for pivot groups
+}
+```
+
+Combine with `customizePivotColumnGroup` (per-group header template/alignment overrides) and `customizePivotColumn` (per-result-column overrides). Companion callbacks live on `<Grid>`. Full reference: `references/pivot.md`.
+
+### Tree Data (Hierarchical)
+import via `TreeDataModule`:
+```tsx
+<Grid
+  dataSource={nestedData}      // children inline on parent (treeDataChildrenField)
+  // dataSource={flatData}     // flat records with treeDataIdMapping + treeDataParentIdField
+  isTreeMode={true}
+  treeColumnIndex={1}
+  treeDataChildrenField="subDepartments"
+  // treeDataIdMapping="catalogId"
+  // treeDataParentIdField="parentId"
+  modules={{ TreeDataModule }}
+/>
+```
+Full reference: `references/tree-data.md`.
+
+### Formula columns
+import via `FormulaModule`:
+```tsx
+<Column field="total" headerText="Total" allowFormula={true} format='C2' />
+```
+Expressions live in the data source (e.g., `'=REF(COLUMN("price"),ROW(1))*REF(COLUMN("quantity"),ROW(1))'`). Custom functions via `formulaSettings.customFunctions`. Full reference: `references/formulas.md`.
+
+### Tool Panel (side bar)
+import via `ColumnToolPanelModule` + `FilterToolPanelModule` + `EditToolPanelModule`, and pass `sideBar={{ enabled:true, toolPanels:[…] }}`. Custom panels are plain `{ id, label, content: { render } }` objects. Full reference: `references/tool-panel.md`.
+
+### GridChart
+sibling to the grid; install from `@syncfusion/react-grid-chart`:
+```tsx
+import { GridChart, GridChartRef, GridChartSettings } from '@syncfusion/react-grid-chart';
+
+const gridChartRef = useRef<GridChartRef>(null);
+gridChartRef.current?.show({ chart:'Column', dataSource, category:[…], series:[…] });
+
+<Grid /* … */ enableGridChart={true} />
+<GridChart ref={gridChartRef} />
+```
+Full reference: `references/integrated-charts.md`.
+
+### Tree Data (Hierarchical)
+```tsx
+<Grid
+  dataSource={nestedData}
+  isTreeMode={true}
+  treeColumnIndex={1}                  // column index whose row renders the expander UI
+  treeDataChildrenField="subDepartments"  // field with child array (nested mode)
+// OR for self-referential data:
+  // treeDataIdMapping="id"
+  // treeDataParentIdField="parentId"
+  modules={{ TreeDataModule }}
+/>
+```
+
+### Formula columns
+```ts
+// Column-allow:
+allowFormula?: boolean;       // marks a column as a formula target
+formulaSettings?: { enabled: boolean };   // grid-level toggle
+```
+
+Requires `FormulaModule`. Formula expressions live in the data source row itself:
+```ts
+{ subtotal: '=REF(COLUMN("price"),ROW(1))*REF(COLUMN("quantity"),ROW(1))' }
+```
+
 ## Enumerations (named imports)
 
 | Enum | Members |
 |---|---|
 | `TextAlign` | `Left`, `Right`, `Center`, `Justify` |
 | `ClipMode` | `Clip`, `Ellipsis`, `EllipsisWithTooltip` |
-| `ColumnType` | `String`, `Number`, `Date`, `DateTime`, `Boolean`, `Checkbox`, `SingleGroup` |
+| `ColumnType` | `String`, `Number`, `Date`, `DateTime`, `Boolean`, `Checkbox`, `SingleGroup`, `Pin` (row-pin dedicated column) |
 | `FilterBarType` | `TextBox`, `NumericTextBox`, `DatePicker` |
 | `EditType` | `TextBox`, `NumericTextBox`, `DropDownList`, `CheckBox`, `DatePicker`, `RichTextEditor`, `Slider`, `Switch`, `TextArea`, `MaskedTextBox`, `AutoComplete`, `MultiSelect`, `ComboBox`, `TimePicker`, `DateTimePicker` |
 | `WrapMode` | `Both`, `Header`, `Content` |
@@ -299,6 +416,8 @@ All settings types are exported. Defaults shown where the documentation is expli
 | `SelectionMode` | `Single`, `Multiple` |
 | `VirtualDomType` | `Row`, `Column`, `Both` |
 | `ScrollMode` | `Auto`, `Virtual`, `Infinite` |
+| `PinScope` | `Row`, `Column`, `Both` (used in `pinningSettings.type`) |
+| `ColumnPinDirection` | `Left`, `Right`, `None` (used in `Column.pinDirection`) |
 
 ## Filter operators (string literals accepted by `FilterPredicates.operator` and `filterByColumn`)
 
@@ -309,6 +428,10 @@ All settings types are exported. Defaults shown where the documentation is expli
 | `greaterThan`, `greaterThanOrEqual`, `lessThan`, `lessThanOrEqual`, `between` | | ✓ |
 | `in`, `notIn` | | ✓ |
 | `isNull`, `isNotNull`, `isEmpty`, `isNotEmpty` (empty only for string) | ✓ | partial |
+| `wildcard` (uses `*`) | ✓ | |
+| `like` (uses `%`) | ✓ | |
+
+**Wildcard** uses `*` as the multi-character wildcard: `Tom*Lee` matches "Tom…Lee", `*Lee` ends-with, `*Tom*` contains. **LIKE** uses `%` as the wildcard (operator `like`): `%Tom Lee%` contains, `Tom Lee%` ends-with, `%Tom Lee` starts-with. Both apply only to string-typed columns.
 
 `FilterPredicates` shape (used in `filterSettings.columns` and `filterByColumn`):
 ```ts
@@ -318,6 +441,7 @@ All settings types are exported. Defaults shown where the documentation is expli
   value: string | number | Date | boolean | null;
   predicate?: 'and' | 'or';
   ignoreAccent?: boolean;
+  caseSensitive?: boolean; // optional override; default follows filterSettings.caseSensitive
 }
 ```
 
@@ -358,6 +482,14 @@ All settings types are exported. Defaults shown where the documentation is expli
 | `PdfExportAfterEvent` | `success`, `error?`, `promise?` | `onAfterPdfExport` |
 | `ExcelAfterExportEvent` | `success`, `error?`, `promise?` | `onAfterExcelExport` |
 | `ErrorEvent` | `args: Error` | `onError` |
+| `OnGroupArgs` | `action: 'add' \| 'remove' \| 'removeall'`, `groupedFields?`, `ungroupedFields?` | `onGroup` |
+| `CellFillStartArgs` | `source: { selectedRowCells: [{ rowKey, fieldNames }] }`, `fillRange: { direction, fillCount }`, `cancel` | `onCellFillStart` |
+| `CellFillCompleteArgs` | `modifiedRecords`, `filledCellsDetail: { [cellKey]: { filledValue } }` | `onCellFillComplete` |
+| `ClipboardCopyEvent` | `clipboardText`, `selectedCells`, `copyWithHeaders`, `cancel` | `onClipboardCopy` |
+| `ClipboardPasteEvent` | `clipboardText`, `pasteMatrix`, `startRowIndex`, `startColumnIndex`, `cancel` | `onClipboardPaste` |
+| `ClipboardCutEvent` | `clipboardText` | `onClipboardCut` |
+| `BatchEditArgs` | `action` plus per-event payload | `onBatchEditStart`, `onBatchEditRender`, `onBatchStateChange`, `onBatchCommitStart`, `onBatchCommitSuccess`, `onBatchCommitError` |
+| `UndoRedoArgs` | `action` plus optional rows / field context | `onUndoStart`, `onUndoComplete`, `onRedoStart`, `onRedoComplete` |
 
 ## Cell selection helper enums (`SelectionType`, `AutoSelectMode`, `SelectionMode`)
 

@@ -351,6 +351,50 @@ Local: works automatically as long as your data has the nested shape. Remote (`D
 
 Works with virtualization: only visible rows are measured. `minWidth`/`maxWidth` always bound the final size.
 
+`AutoFitModule` is required when using `autoFit` runtime calculation. Pair with `ResizeModule` for user-driven resize after auto-fit:
+
+```tsx
+const modules = { AutoFitModule, ResizeModule, FilterModule, PagerModule };
+```
+
+> Auto-fit is calculated using only currently visible rows (with row virtualization). Configure `virtualizationSettings.type` to balance speed and accuracy on large datasets; turning all columns on ensures accurate widths but can slow very large grids.
+
+## Min / Max column width
+
+`Column.minWidth` and `Column.maxWidth` clamp column rendering and resize boundaries. The remaining grid width is shared among other columns.
+
+```tsx
+<Column field="FoodName"  headerText="Food Name" minWidth={80}  maxWidth={180} />
+<Column field="Protein"   headerText="Protein"   maxWidth={100} />
+```
+
+Resize respects these limits — users cannot shrink a column below `minWidth` or expand it beyond `maxWidth`.
+
+## Column-level pin direction
+
+Pin a column to the left or right at runtime with `Column.pinDirection` (string or `ColumnPinDirection` enum):
+
+```tsx
+<Column field="EmployeeId"     pinDirection={ColumnPinDirection.Left}  width={130} />
+<Column field="ProductivityScore" pinDirection={ColumnPinDirection.Right} width={190} />
+```
+
+`pinDirection` also accepts a function for conditional pinning:
+
+```tsx
+const columnPinCallback = (column: ColumnProps) => {
+  if (column.field === 'ItemName') return ColumnPinDirection.Left;
+  if (column.field === 'Price')    return ColumnPinDirection.Right;
+  return ColumnPinDirection.None;
+};
+
+<Column field="ItemName" pinDirection={columnPinCallback} width="200" />
+```
+
+Programmatic control is also available through `gridRef.current?.pinColumn(field, direction)` and `gridRef.current?.unpinColumn(field)`.
+
+Pair `pinningSettings.enabled` with `pinningSettings.type: PinScope.Column` to activate column pinning. `PinScope.Both` enables pinning of **rows and columns simultaneously** — see `references/rows.md` for row pinning API (`pinRows`, `unpinRows`).
+
 ## Common column patterns
 
 | Need | Configuration |

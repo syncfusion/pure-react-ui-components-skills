@@ -66,6 +66,21 @@ const jump = (inputValue: string) => gridRef.current?.goToPage(parseInt(inputVal
 
 `gridRef.current?.pagerRef?.totalRecordsCount` is accessible when you need quota-style logic (e.g., reject adds when over 1000 rows).
 
+### Asynchronous pagination
+
+`gridRef.current?.goToPageAsync(pageIndex: number): Promise<void>` navigates to a page and resolves **after** the data request completes. Use this when paging triggers a server round-trip (DataManager adaptors, custom `onDataRequest`) and the next action (`pdfExport`, `print`, additional filter) should wait.
+
+```tsx
+const navigateAndExport = async () => {
+  await gridRef.current?.goToPageAsync(3);
+  // The data slice for page 3 is now resolved into the grid's view.
+  await gridRef.current?.filterByColumnAsync('Status', 'equal', 'On Hold');
+  // Safe to consume the post-filter state.
+};
+```
+
+Combine with `filterByColumnAsync` / `clearFilteringAsync` (see `references/filtering.md`) for chained async data operations.
+
 ## `onPageChange` event
 
 `PageEvent`: `{ currentPage: number; previousPage: number }`. Fires after paging completes.

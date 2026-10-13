@@ -102,6 +102,20 @@ gridRef.current?.getData(false);
 
 `getData(true)` (default) returns the current page slice. `getData(false)` returns the full filtered dataset across pages.
 
+### Asynchronous programmatic search
+
+When search triggers a server round-trip (DataManager adaptors, custom `onDataRequest`), use `searchAsync(value)` which returns a `Promise` that resolves once the search has been applied (including any data request):
+
+```tsx
+// Apply asynchronously
+await gridRef.current?.searchAsync('Alice');
+
+// Clear asynchronously
+await gridRef.current?.searchAsync('');
+```
+
+Use the async variant whenever the next action (export, paging, filter) must wait for the search slice to resolve.
+
 ## `onSearch` event
 
 `SearchEvent`: `{ value: string }` — the active search string.

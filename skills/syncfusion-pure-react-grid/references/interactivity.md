@@ -93,11 +93,45 @@ gridRef.current?.applyFill({
 
 `fillOperation` args: `{ fieldName, currentValue, fillRange: { direction, fillCount }, cellPosition }`. Return any value or `false`.
 
+### Filling direction (`allowedDirection`)
+
+`allowedDirection` restricts the autofill handle to one axis. `'row'` enables horizontal fill, `'column'` enables vertical fill, and `'both'` allows either.
+
+| `allowedDirection` | Where the handle extends |
+|---|---|
+| `'row'` | Fills right (or left, depending on drag direction) only. |
+| `'column'` | Fills downward (or upward) only. |
+| `'both'` (default) | Fills any direction. |
+
+### Backward-fill behaviour (`shouldClearOnReduction`)
+
+`shouldClearOnReduction` decides what happens when the user reduces a filled range by dragging _backwards_:
+
+- `false` (default) — backward reduction is blocked; the range stays.
+- `true` — backward reduction releases the trailing cells; those cells are reset to `null` (empty).
+
+> Some Syncfusion samples and reference pages refer to the same property as `preventBackwardFill`. The supported React Data Grid setting is `shouldClearOnReduction`. Use `shouldClearOnReduction: true` to **prevent** backward reduction (preserves the filled range), or `false` to allow cells to clear when the fill shrinks.
+
+### `excludeFromAutoFill` callback
+
+`excludeFromAutoFill(field: string) => boolean` returns `true` to skip a destination column during autofill. Source-side reads still work — only the destination cells are protected:
+
+```ts
+const autoFillSettings: AutoFillSettings = {
+  enabled: true,
+  excludeFromAutoFill: (field: string) => field === 'AvgResponseTime',
+};
+```
+
+A `true` return value leaves existing values intact for the excluded field during this fill.
+
 ### Constraints
 
 - Autofill requires `isPrimaryKey` for accurate updates.
 - Primary-key columns are auto-disabled for autofill.
 - Validation rules on `Column.validationRules` apply to autofilled values.
+- Autofill supports cell selection with `cellSelectionType` set to `'Box'` or `'BoxWithBorder'`; `'Flow'` is insufficient.
+- When applying autofill values, the grid validates them against the target column `type` and converts where possible; values that cannot be converted are treated as invalid.
 
 ## Clipboard
 
@@ -145,6 +179,59 @@ gridRef.current?.cutToClipboard();              // programmatic cut (preserves P
 - Cut preserves primary key columns automatically.
 - Paste appends new rows when content exceeds the current view (if `allowAdd: true`).
 - Primary key cannot be modified through clipboard paste.
+
+### Copy cell ranges (`cellSelectionType`)
+
+For cell selection + clipboard copy, set `SelectionSettings` to cell selection with `cellSelectionType: 'Box'` (rectangular) or `'BoxWithBorder'` (rectangular with visible border). `'Flow'` produces continuous ranges; rectangular cell selections export as tab-separated rows that paste cleanly into Excel/Sheets.
+
+```tsx
+import { SelectionType, CellSelectionType } from '@syncfusion/react-grid';
+
+const [selectionSettings] = useState<SelectionSettings>({
+  type: SelectionType.Cell,
+  mode: 'Multiple',
+  cellSelectionType: CellSelectionType.Box,    // or 'BoxWithBorder'
+});
+```
+
+`CellSelectionType.Flow` (default) extends selection across rows/columns continuously and is the only mode that supports multi-range scattered selections.
+
+### Copy rows (`allowRowCopy`)
+
+`clipboardSettings.allowRowCopy: true` makes the clipboard copy the full selected row(s) instead of the focused cell:
+
+- `selectionSettings.mode: 'Single'` → single full row copied.
+- `selectionSettings.mode: 'Multiple'` → all selected rows copied as tab-separated values.
+
+```tsx
+const [clipboardSettings] = useState<ClipboardSettings>({
+  enabled: true,
+  allowRowCopy: true,
+});
+```
+
+### Copy headers (`copyWithHeaders`)
+
+`copyWithHeaders: true` includes the column header text on the first line of the copied payload — useful for spreadsheet / report paste targets that expect labelled columns:
+
+```tsx
+const [clipboardSettings] = useState<ClipboardSettings>({
+  enabled: true,
+  allowRowCopy: true,
+  copyWithHeaders: true,
+});
+```
+
+### Disabling cut / paste individually
+
+Set `allowCut: false` (cut is restricted at runtime — the `onClipboardCut` event still fires as confirmation) and/or `allowPaste: false` to lock paste operations. With `allowPaste: false`, any paste attempt is intercepted and `onClipboardPaste` is emitted with `args.cancel = true` so handlers can log the attempt and reset state. Cut and paste are otherwise enabled by default when `ClipboardModule` is registered.
+
+### Paste new rows at the bottom
+
+When the pasted matrix exceeds the current view (more rows than visible) and `editSettings.allowAdd: true`, the grid **appends new records** to the underlying data source. Existing rows (matched by primary key) update in place; new rows build records and add to the end:
+
+- The primary key of newly-pasted rows remains **unchanged** (the grid treats PK as constant for each record).
+- `onDataChangeStart` can intercept and adjust the data before commit.
 
 ## Context menu
 

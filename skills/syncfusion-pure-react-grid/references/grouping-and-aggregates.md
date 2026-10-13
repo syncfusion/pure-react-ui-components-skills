@@ -208,6 +208,24 @@ Available keys match the `AggregateType` value applied to that column (`Sum`, `A
 | Footer total only | `<Aggregates>` with one `<AggregateRow>` |
 | Two aggregates per field | `<AggregateRow>` × 2 with the same field, different `type` |
 
+## Asynchronous programmatic grouping
+
+When grouping triggers a server round-trip (DataManager / `onDataRequest`), use the `Async` variants which return `Promise` that resolves once the grouping (or ungrouping / clearing) has been applied:
+
+```tsx
+// Group a column asynchronously
+await gridRef.current?.groupColumnAsync(['Priority'], /*isResetRequired*/ true);  // resets existing grouping first
+await gridRef.current?.groupColumnAsync(['Region', 'Country']);                    // appends to current grouping
+
+// Remove columns from the grouping
+await gridRef.current?.ungroupColumnAsync(['Priority']);
+
+// Clear all grouping
+await gridRef.current?.clearGroupingAsync();
+```
+
+Pair with `groupColumnAsync` + the `onGroup` event (with `OnGroupArgs.action` of `'add' | 'remove' | 'removeall'`) so UI state mirrors the async result.
+
 ## Constraints & guardrails
 
 - **Caption aggregates** are only supported by `GroupType.SingleColumn` and `GroupType.MultipleColumns` — not by `GroupRows` (single-cell caption per group).

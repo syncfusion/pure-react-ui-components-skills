@@ -230,6 +230,103 @@ gridRef.current?.clearFilter(['Customer', 'Country']);
 
 The last three arguments apply **only** when adding a second predicate to the same column (i.e., creating a compound condition); they're ignored on the first predicate.
 
+### Asynchronous programmatic filtering
+
+When the filter triggers a server round-trip or a downstream action must wait for completion, use the async variants. Both return `Promise` that resolves once the filter has been applied (including any data request):
+
+```tsx
+// Apply a filter asynchronously
+await gridRef.current?.filterByColumnAsync('Status', 'equal', 'Not Started');
+
+// Clear filters asynchronously; pass an array to clear a subset
+await gridRef.current?.clearFilteringAsync();
+await gridRef.current?.clearFilteringAsync(['Status']);
+```
+
+Use these whenever the filter changes a server-side page slice — the resolved promise guarantees subsequent calls (`pdfExport()`, `getData(false)`) read the filtered dataset.
+
+## Initial filter
+
+`filterSettings.columns` declares an initial/preset filter set applied at mount:
+
+```tsx
+const [filterSettings] = useState<FilterSettings>({
+  enabled: true,
+  columns: [
+    { field: 'GuestName', operator: 'equal', value: 'Anika Bose' },
+    { field: 'RoomType', operator: 'equal', value: 'Suite', predicate: 'and' },
+    { field: 'CheckInDate', operator: 'greaterThanOrEqual', value: new Date(2025, 0, 1), predicate: 'and' },
+  ],
+});
+```
+
+`ignoreAccent` (per-predicate or global) treats accented characters as identical at compare time: é == e, ñ == n. Useful for name-based filtering on multilingual data.
+
+## Case-sensitive and accent-insensitive filtering
+
+```tsx
+// Case-sensitive
+const [filterSettings] = useState<FilterSettings>({
+  enabled: true,
+  caseSensitive: true,
+});
+
+// Accent-insensitive
+const [filterSettings] = useState<FilterSettings>({
+  enabled: true,
+  ignoreAccent: true,
+  columns: [{ field: 'CustomerName', operator: 'contains', value: 'José', ignoreAccent: true }],
+});
+```
+
+When `filterByColumn(...)` is used, the global `caseSensitive`/`ignoreAccent` toggle on `FilterSettings` is overridden by the explicit `caseSensitive` or `ignoreAccent` argument the predicate carries.
+
+## Menu filter custom operator list
+
+In `Menu` mode, restrict the operator dropdowns per type:
+
+```tsx
+const [filterSettings] = useState<FilterSettings>({
+  enabled: true,
+  type: 'Menu',
+  operators: {
+    stringOperator: [
+      { value: 'contains',    text: 'Includes' },
+      { value: 'startsWith',  text: 'Begins With' },
+      { value: 'endsWith',    text: 'Ends With' },
+    ],
+    numberOperator: [
+      { value: 'greaterThan', text: 'Above' },
+      { value: 'lessThan',    text: 'Below' },
+    ],
+    dateOperator: [
+      { value: 'greaterThan', text: 'After' },
+      { value: 'lessThan',    text: 'Before' },
+    ],
+    booleanOperator: [
+      { value: 'equal',       text: 'Matches' },
+      { value: 'notEqual',    text: 'Excludes' },
+    ],
+  },
+});
+```
+
+Operator groups (Menu mode only): `stringOperator`, `numberOperator`, `dateOperator`, `datetimeOperator`, `dateonlyOperator`, `booleanOperator`.
+
+## Excel filter — immediate mode
+
+In `Excel` mode, filters apply as checkbox state changes without an explicit Apply action:
+
+```tsx
+const [filterSettings] = useState<FilterSettings>({
+  enabled: true,
+  type: 'Excel',
+  mode: 'Immediate',
+});
+```
+
+The same `mode: 'Immediate'` switch works for `Menu` filter and FilterBar (`'FilterBar'`).
+
 ## `onFilter` event
 
 ```ts

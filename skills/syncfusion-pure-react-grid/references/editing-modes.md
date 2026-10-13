@@ -146,6 +146,119 @@ Required: a column marked `isPrimaryKey={true}` for the `key` parameter to resol
 
 Both methods trigger **partial re-renders** of the affected cell/row only — fast enough for streaming scenarios.
 
+## Batch editing
+
+`editSettings.allowBatchSave: true` lets users edit multiple cells across rows before committing them in a single save. Pair with `mode: 'Cell'` (cell-level batch) or `mode: 'Normal'` (full-row batch — multiple cells in a row committed together).
+
+```tsx
+const [editSettings] = useState<EditSettings>({
+  allowEdit: true,
+  allowBatchSave: true,
+  mode: 'Cell',
+});
+
+<Grid
+  editSettings={editSettings}
+  toolbar={['Edit', 'Update', 'Cancel']}
+  modules={{ EditModule }}
+  ...
+/>
+```
+
+Batch-specific imperative methods:
+
+| Method | Description |
+|---|---|
+| `saveBatchChanges()` | Commit all pending batch changes as a single batch. |
+| `cancelBatchChanges()` | Discard all pending batch changes and restore original values. |
+| `getBatchQueue()` | Return the current queue of pending batch changes. |
+| `getConfirmBatch()` | Indicates whether pending batch changes require confirmation. |
+
+Batch editing events:
+
+| Event | Description |
+|---|---|
+| `onBatchEditStart` | Fires when batch editing starts. |
+| `onBatchEditRender` | Fires when a batch edit is rendered. |
+| `onBatchStateChange` | Fires when the pending batch state changes. |
+| `onBatchCommitStart` | Fires before pending changes are committed. |
+| `onBatchCommitSuccess` | Fires after pending changes are committed successfully. |
+| `onBatchCommitError` | Fires when committing pending changes fails. |
+
+## Undo/Redo editing
+
+`editSettings.allowUndoRedo: true` plus `EditModule` enables per-edit undo/redo. Keyboard shortcuts: `Ctrl+Z` (undo) and `Ctrl+Y` (redo). The default history size is **5**; raise it with `editSettings.undoRedoLimit`.
+
+```tsx
+const [editSettings] = useState<EditSettings>({
+  allowEdit: true,
+  allowUndoRedo: true,
+  undoRedoLimit: 10,
+});
+
+<Grid editSettings={editSettings} modules={{ EditModule }} ... />
+```
+
+Add `'Undo'` and `'Redo'` to the `toolbar` array to surface toolbar buttons:
+
+```tsx
+const toolbarOptions = ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Undo', 'Redo'];
+```
+
+For batch editing, also set `allowBatchUndoRedo: true` so undo/redo work across virtual batch saves:
+
+```tsx
+const [editSettings] = useState<EditSettings>({
+  allowEdit: true,
+  allowBatchSave: true,
+  allowUndoRedo: true,
+  allowBatchUndoRedo: true,
+  mode: 'Cell',
+});
+```
+
+Imperative helpers:
+
+| Method | Description |
+|---|---|
+| `undo()` | Revert the most recent editing action. |
+| `redo()` | Reapply the most recent undone action. |
+| `getUndoActionsCount()` | Number of actions available for undo. |
+| `getRedoActionsCount()` | Number of actions available for redo. |
+| `clearUndoRedoHistory()` | Clear the undo and redo history. |
+
+Lifecycle events:
+
+| Event | Description |
+|---|---|
+| `onUndoStart` | Fires before an undo action begins. |
+| `onUndoComplete` | Fires after an undo action completes. |
+| `onRedoStart` | Fires before a redo action begins. |
+| `onRedoComplete` | Fires after a redo action completes. |
+
+## Bulk save
+
+`saveBulkChanges(changedData, rowData?, callback?)` applies the same field-level changes to multiple records in a single operation. If `rowData` is omitted, the change targets the **currently selected records**.
+
+```tsx
+gridRef.current?.saveBulkChanges(
+  { Discount: 15, ShippingMethod: 'Express' },          // changedData
+  [recordP002, recordP003, recordP004],                // rowData (optional)
+);
+
+// Or apply to currently-selected rows:
+gridRef.current?.saveBulkChanges({ Discount: 15 });
+gridRef.current?.refresh();                            // update the view
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `changedData` | `object` | Field names and values to apply to the matching records. |
+| `rowData` | `object[]` (optional) | The records to update. Defaults to current selection. |
+| `callback` | `(result) => void` (optional) | Invoked after the changes are saved. |
+
+Requires `isPrimaryKey` so the grid can identify rows. `saveBulkChanges` updates grid state only — call `refresh()` after if the UI should reflect new values immediately.
+
 ## Method table (consolidated)
 
 | Method | Mode | Behavior |
@@ -160,7 +273,16 @@ Both methods trigger **partial re-renders** of the affected cell/row only — fa
 | `saveCellChanges()` | Cell | Commits the edited cell. |
 | `cancelCellChanges()` | Cell | Restores the cell's original value. |
 | `setCellValue(key, field, value, triggerEvent?)` | All | Pushes a value without edit form. |
+| `setCellValueAsync(rowKey, columnName, value, isDataSourceChangeRequired?)` | All | Async variant — returns a Promise that resolves after any remote data request. |
 | `setRowData(key, data, triggerEvent?)` | All | Replaces entire row without edit form. |
+| `saveBatchChanges()` | Batch | Saves pending batch changes. |
+| `cancelBatchChanges()` | Batch | Cancels pending batch changes. |
+| `getBatchQueue()` | Batch | Returns current batch change queue. |
+| `getConfirmBatch()` | Batch | Indicates if batch confirmation is required. |
+| `saveBulkChanges(changedData, rowData?, callback?)` | All | Bulk-update records. |
+| `undo()` / `redo()` | Undo/Redo enabled | Reverse or reapply edits. |
+| `getUndoActionsCount()` / `getRedoActionsCount()` | Undo/Redo enabled | Read history depth. |
+| `clearUndoRedoHistory()` | Undo/Redo enabled | Clear history. |
 
 ## Mode selection guide
 

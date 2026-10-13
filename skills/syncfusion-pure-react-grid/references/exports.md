@@ -251,6 +251,32 @@ excelExport({
 | Hyperlinks in Excel | set `args.hyperLink = { target, displayText }` |
 | Get blob for downstream upload | set `isBlob: true`, read `ev.promise` in `onAfterXxxExport` |
 
+## Export multiple grids (`useGridExcelExport`)
+
+Export several grids into a single Excel file by passing their `ref`s into the export call:
+
+```tsx
+const accountsGridRef      = useRef<GridRef>(null);
+const transactionsGridRef  = useRef<GridRef>(null);
+const gridRef              = useRef<GridRef>(null);
+
+const { excelExport, isExporting } = useGridExcelExport({ gridRef });
+
+await excelExport({
+  isMultipleExport: true,
+  exportGrids: [accountsGridRef, transactionsGridRef],
+  multipleExport: { type: 'AppendToPage', blankRows: 2 },
+});
+```
+
+| `multipleExport.type` | Effect |
+|---|---|
+| `'AppendToPage'` | Combine all grids into the same worksheet, in source order. |
+| `'AppendToSheet'` | Place each grid in its own worksheet but in the same workbook. |
+| `'NewPage'` | Place each grid in its own worksheet (each gets a fresh tab). |
+
+`multipleExport.blankRows` (only meaningful with `'AppendToPage'`) inserts empty rows between grids for visual separation. Only the Excel export hook supports `multipleExport` — print and PDF exports operate on a single grid.
+
 ## Constraints & guardrails
 
 - **Toolbar integration**: a grid with `'PdfExport'` in toolbar but no `useGridPdfExport()` in scope will appear functional but the click is a no-op. Ensure the hook is mounted in the same component tree.

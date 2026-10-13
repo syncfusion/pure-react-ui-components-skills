@@ -101,6 +101,114 @@ const [rowNumberSettings] = useState<RowNumberSettings>({ enabled: true });
 
 Indices reflect the current view (changes on sort/filter/group/page). Often combined with `showColumnChooser` and `toolbar={['ColumnChooser']}` + `ColumnChooserModule`.
 
+> Row numbers are display-only metadata produced by the grid; they are not part of the original data source. Row numbering is maintained across sort, filter, group, and paging operations. Add `isPrimaryKey` on at least one column so row identification (edit / select / delete APIs) remains stable across view changes.
+
+## Row drag-and-drop (`dragAndDropSettings`)
+
+Reorder rows within a grid or transfer them across grids via `RowReorderModule` and the row drag events.
+
+### Same-grid reorder
+
+```tsx
+import { Grid, DragAndDropSettings, ReorderModule } from '@syncfusion/react-grid';
+
+const modules = { ReorderModule };
+
+const [dragAndDropSettings] = useState<DragAndDropSettings>({ enabled: true });
+
+<Grid
+  dataSource={data}
+  dragAndDropSettings={dragAndDropSettings}
+  selectionSettings={{ enabled: true, mode: 'Multiple' }}
+  modules={modules}
+/>
+```
+
+Within a single grid, leave `targetID` empty. Mark a column with `isPrimaryKey={true}` so multi-row drags and dropped reorders remain stable across sort/filter.
+
+### Cross-grid transfers
+
+Set `targetID` on both the source and destination grids to enable two-way transfers:
+
+```tsx
+const sourceDragSettings: DragAndDropSettings      = { enabled: true, targetID: 'destination-grid' };
+const destinationDragSettings: DragAndDropSettings = { enabled: true, targetID: 'source-grid' };
+
+<Grid id="source-grid"      dataSource={sourceData}      dragAndDropSettings={sourceDragSettings} />
+<Grid id="destination-grid" dataSource={destinationData} dragAndDropSettings={destinationDragSettings} />
+```
+
+### Events
+
+| Event | Args (`RowDragEventArgs`) | Notes |
+|---|---|---|
+| `onRowDragStart` | `fromIndex`, `data: T[]`, `cancel`, `targetGrid?` | Set `args.cancel = true` to block the drag. |
+| `onRowDrag` | `fromIndex`, `dropIndex`, `data: T[]`, `targetGrid?` | Informational; fires during drag. |
+| `onRowDrop` | `fromIndex`, `dropIndex`, `data: T[]`, `targetGrid?` | Fires after drop. |
+
+Use `gridRef.current?.getSelectedRecords()` to read the dragged rows server-side before broadcasting the change.
+
+## Row pinning
+
+Pin important rows to the top or bottom so they stay visible while the user scrolls. Row pinning is enabled through `pinningSettings` with `type: PinScope.Row` (or `PinScope.Both` to pin rows **and** columns).
+
+```tsx
+import {
+  Grid, PinScope, PinningModule, PinningSettings, ColumnType,
+} from '@syncfusion/react-grid';
+
+const modules = { PinningModule };
+
+const [pinningSettings] = useState<PinningSettings>({
+  enabled: true,
+  type: PinScope.Row,
+  allowTopPin: true,
+  allowBottomPin: true,
+});
+
+const isRowPinned = (row: unknown): 'top' | 'bottom' | null => {
+  const task = row as { Priority: string };
+  if (task.Priority === 'Critical') return 'top';
+  if (task.Priority === 'Low')      return 'bottom';
+  return null;
+};
+
+<Grid
+  dataSource={rows}
+  pinningSettings={pinningSettings}
+  isRowPinned={isRowPinned}
+  height="450px"
+  modules={modules}
+>
+  <Columns>
+    <Column width="50px" type={ColumnType.Pin} />     {/* optional dedicated pin column */}
+    <Column field="TaskID"   isPrimaryKey />
+    {/* … */}
+  </Columns>
+</Grid>
+```
+
+Users can also pin/unpin via the context menu — register `ContextMenuModule` and set `contextMenuSettings.enabled = true`. To make pinning a CRUD-time side effect (e.g., auto-pin when a "Job Title" field changes), wire `onDataChangeComplete`:
+
+```tsx
+const onDataChangeComplete = (args: SaveEvent<unknown> | DeleteEvent<unknown>) => {
+  const employee = args.data as { JobTitle: string };
+  if ('rowIndex' in args) {
+    if (employee.JobTitle === 'Product Manager') gridRef.current?.pinRows?.([employee], 'top');
+    else                                         gridRef.current?.unpinRows?.([employee]);
+  }
+};
+```
+
+Programmatic helpers:
+
+| Method | Description |
+|---|---|
+| `gridRef.current?.pinRows(records, position)` | Pin `records` (`T[]`) to `'top'` or `'bottom'`. |
+| `gridRef.current?.unpinRows(records)` | Unpin the given `records`. |
+
+The optional `Column type={ColumnType.Pin}` column renders inline pin/unpin icons; row pinning still works without it.
+
 ## Row drag-and-drop (`dragAndDropSettings`)
 
 ```tsx
